@@ -6,8 +6,7 @@ import pandas as pd
 
 import os
 
-#API_KEY_FOR_AI = os.environ.get("API_KEY_FOR_AI")
-API_KEY_FOR_AI = 'AIzaSyCAmIGtNVCJ662s67IWbmtlFw7O5-GCBUo'
+API_KEY_FOR_AI = os.environ.get("API_KEY_FOR_AI")
 
 def askAI(question: str):
     '''
