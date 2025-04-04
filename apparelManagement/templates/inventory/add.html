@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Inventory Card Addition
+{% endblock %}
+
+{% block content %}
+    {% csrf_token %}          <!--This is to protect against CSRF attacks-->
+    <p>     
+        <form method="POST" id="inventoryForm" autocomplete="off">    
+            <div class="row g-3">
+                <div class="card col-8 {{theme.border}}">
+                    <div class="card-body">
+                        <h5 class="card-title">Inventory Card</h5>
+                        <div class="row {{theme.justify}} {{theme.align}}">
+                            <div class="col-4 g-3 {{theme.align}} {{theme.justify}}">
+                                <label for="id_Code" class="form-label">Code:</label>
+                                <input type="text" class="{{theme.textInput}}" name="Code" id="id_Code" required>
+                            </div>
+                            <div class="col-8 g-3 {{theme.align}} {{theme.justify}}">
+                                <label for="id_Code" class="form-label">Name:</label>
+                                <input type="text" class="{{theme.textInput}}" name="Name" id="id_Name" required>
+                            </div>
+                            <div class="col-4 g-3 {{theme.align}} {{theme.justify}}">
+                                <label for="id_Group" class="form-label">Group:</label>
+                                <select id="id_Group" class="{{theme.dropdown}}" name="Group" required> 
+                                    {% for option in groups %}
+                                        <option value="{{option.value}}"> {{option.text}} </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-4 g-3 {{theme.align}} {{theme.justify}}">
+                                <label for="id_UnitType" class="form-label">Unit Type:</label>
+                                <select id="id_UnitType" class="{{theme.dropdown}}" name="UnitType" required onchange="getUnitsForGroup(this)">
+                                    {% for option in unitTypes %}
+                                        <option value="{{option.value}}"> {{option.text}} </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-4 g-3 {{theme.align}} {{theme.justify}}">
+                                <label for="id_Unit" class="form-label">Unit:</label>
+                                <select id="id_Unit" class="{{theme.dropdown}}" name="Unit" required></select>
+                            </div>
+                            <div class="col-2 g-3 {{theme.align}} {{theme.justify}}">
+                                <label for="id_Audit" class="form-label">Audit:</label>
+                                <select id="id_Audit" class="{{theme.dropdown}}" name="AuditReq" required>
+                                    {% for option in auditReq %}
+                                        <option value="{{option.value}}"> {{option.text}} </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-2 g-3 {{theme.align}} {{theme.justify}}">
+                                <label for="id_Life" class="form-label">Life:</label>
+                                <input type="number" class="{{theme.textInput}}" value="0" name="Life" min="0" id="id_Life" required>
+                            </div>
+                            <div class="col-4 g-3 {{theme.align}} {{theme.justify}}">
+                                <label for="id_LeadTime" class="form-label">Lead Time:</label>
+                                <input type="number" class="{{theme.textInput}}" value="0" name="LeadTime" min="0" id="id_LeadTime" required>
+                            </div>
+                            <div class="col-4 g-3 {{theme.align}} {{theme.justify}}">
+                                <label for="id_MinStockLvl" class="form-label">Min Stock Level:</label>
+                                <input type="number" class="{{theme.textInput}}" value="0" name="MinStockLvl" min="0" id="id_MinStockLvl" required>
+                            </div>
+                            <div class="col-2 g-3 {{theme.align}} {{theme.justify}}">
+                                <label for="id_StandardPrice" class="form-label">Standard Price:</label>
+                                <input type="number" class="{{theme.textInput}}" value="0" name="StandardPrice" min="0" id="id_StandardPrice" required>
+                            </div>
+                            <div class="col-3 g-3 {{theme.align}} {{theme.justify}}">
+                                <label for="id_Currency" class="form-label">Currency:</label>
+                                <select id="id_Currency" class="{{theme.dropdown}}" name="Currency" required>
+                                    {% for option in currencies %}
+                                        <option value="{{option.value}}"> {{option.text}} </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-2 g-3 {{theme.align}} {{theme.justify}}">
+                                <label for="id_InUse" class="form-label">In Use:</label>
+                                <select id="id_InUse" class="{{theme.dropdown}}" name="InUse" required>
+                                    {% for option in inUse %}
+                                        <option value="{{option.value}}"> {{option.text}} </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="button" class="col g-4 {{theme.buttonSecondary}}" onclick="submitForms()">
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card col-4 {{theme.border}}">
+                    <div class="card-body">
+                        <h5 class="card-title">Inventory Code Generator</h5>
+                        <div class="row {{theme.justify}} {{theme.align}}" onchange="getCodeParts(this)">
+                            <div class="col-12 g-2 {{theme.align}} {{theme.justify}}">
+                                <label for="id_Part1" class="form-label">Part 1:</label>
+                                <select id="id_Part1" class="{{theme.dropdown}}" name="Part1">
+                                    {% for option in codeP1 %}
+                                        <option value="{{option.value}}"> {{option.text}} </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-12 g-2 {{theme.align}} {{theme.justify}}">
+                                <label for="id_Part2" class="form-label">Part 2:</label>
+                                <select id="id_Part2" class="{{theme.dropdown}}" name="Part2"></select>
+                            </div>
+                            <div class="col-12 g-2 {{theme.align}} {{theme.justify}}">
+                                <label for="id_Part3" class="form-label">Part 3:</label>
+                                <select id="id_Part3" class="{{theme.dropdown}}" name="Part3" ></select>
+                            </div>
+                            <div class="col-12 g-2 {{theme.align}} {{theme.justify}}">
+                                <label for="id_Part4" class="form-label">Part 4:</label>
+                                <input type="text" class="{{theme.textInput}}" name="Part4" id="id_FinalCode" onkeyup="generateCode(this)">
+                            </div>
+                            <div class="col-12 g-2 {{theme.align}} {{theme.justify}}">
+                                <label for="id_FinalCode" class="form-label">Code:</label>
+                                <input type="text" class="{{theme.textInput}}" name="GeneratedCode" id="id_FinalCode" readonly>
+                            </div>
+                            <button class="col g-4 {{theme.buttonSecondary}}" onclick="finaliseCode(this)">
+                                Finalise
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </p>
+
+    <script>    //Get the inventory units from the selected groups
+        async function getUnitsForGroup (source) {
+            const group = source.value;
+            const response = await fetch('/options/unit/'+group);
+            const units = await response.json();
+
+            const unitSelect = source.parentElement.nextElementSibling.children[1];
+            unitSelect.innerHTML = '';
+            
+            units.forEach(unit => {
+                const option = document.createElement('option');
+                option.value = unit.value;
+                option.text = unit.text;
+                unitSelect.appendChild(option);
+            });
+        }
+    </script>
+
+    <script>    //To send data to server
+        async function submitForms() {
+            const allForms = document.forms;
+
+            const inventoryForm = allForms['inventoryForm']; 
+
+            const inventory = inventoryForm.elements;
+
+            let data = {};
+             
+            //Prepare the data for Style Group
+            let group = 'inventory';
+            for (const element of inventory) {
+                if (element.name) {
+                    data[group+'_'+element.name] = element.value;
+                }   
+            }
+            await submitData(data);
+        }
+
+        //Convert data to Json and send to server
+        async function submitData(obj) {
+            const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+            
+            const data = JSON.stringify(obj);
+            
+            try {
+                const response = await fetch('add', {
+                    method: 'POST',
+                    body: data,
+                    headers: { "X-CSRFToken": csrf},
+                  });
+                if (response.status == 200) {
+                    const inventoryCode = await response.text();
+                    window.location.href = inventoryCode+'/edit';
+                } else {
+                    const errorMessage = await response.text()
+                    showMessage(errorMessage);
+                }
+            } catch (error) {
+                alert(`Error occured. Check with administrator. Error: ${errorMessage}`);
+            }
+        }
+
+        function formToTable(group, form, data){
+            let rows = form.querySelectorAll('.row');
+            //Remove unnecesary rows
+            rows = dropElements(rows);
+
+            for (const row of rows) {
+                let rowNum = row.getAttribute('row');
+                let cols = row.children;
+                //Remove unnecessary columns
+                cols = dropElements(cols, cols.length-1, cols.length-1);
+
+                for (const col of cols) {
+                    name = col.firstElementChild.name+'_'+rowNum;
+                    value = col.firstElementChild.value;
+                    data[group+'_'+name] = value;                    
+                }
+            }
+            return data;
+        }
+
+        function dropElements(obj, startFrom=0, endAt=0) {
+            const arr = Object.values(obj);
+
+            arr.splice(startFrom, endAt - startFrom + 1);
+
+            return arr;
+        }
+
+    </script>
+
+    <script>    //Handle Inventory Code Generator
+        async function getCodeParts(source) {
+            const elements = source.children;
+
+            let parts = {};
+            for (let i=0; i<4; i++) {
+                const value = elements[i].children[1].value;
+                parts['part_'+i] = value;
+            }
+
+            const response = await submitCodeForCheck(parts);
+
+            if (!response.ok) {
+                const errorMessage = await response.text();
+                showMessage(errorMessage);
+                return;
+            }
+            const data = await response.json();
+
+            const part2Options = data.part2s;
+            if (part2Options) {
+                const part2Selected = data.part2;
+                await appendOptions('id_Part2', part2Options, part2Selected);
+            }
+            
+            const part3Options = data.part3s;
+            if (part3Options) {
+                const part3Selected = data.part3;
+                await appendOptions('id_Part3', part3Options, part3Selected);
+            }
+            generateCode(source.children[4].children[1]);
+        }
+
+        function generateCode(source) {
+            const elements = source.parentElement.parentElement.children;
+
+            const part1 = elements[0].children[1].value;
+            const part2 = elements[1].children[1].value;
+            const part3 = elements[2].children[1].value;
+            const part4 = elements[3].children[1].value;
+            const code = elements[4].children[1];
+
+            if (part1 && part2 && part3 && part4) {
+                code.value = part1+part2+part3+part4;
+            } else {
+                code.value = null;
+            }
+        }
+
+        //Convert data to Json and send to server
+        async function submitCodeForCheck(obj) {
+            const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+            
+            const data = JSON.stringify(obj);
+            
+            //console.log (csrf);
+            const response = await fetch('/inv/code/gen/', {
+              method: 'POST',
+              body: data,
+              headers: { "X-CSRFToken": csrf},
+            });
+
+            return response;
+        }
+
+        async function finaliseCode(source) {
+            const codeValue = source.parentElement.children[4].children[1].value;
+
+            if (codeValue) {
+                const response = await fetch('/inv/'+codeValue+'/check');
+
+                if (response.ok) {
+                    const codeBox = document.getElementById('id_Code');
+                    codeBox.value = codeValue;
+                } else {
+                    const errorMessage = await response.text();
+                    showMessage(errorMessage);
+                }
+                
+            } else {
+                showMessage('Invalid Code');
+            }
+            
+        }
+    </script>
+{% endblock %}

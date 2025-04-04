@@ -1,0 +1,352 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Auto Inventory Requirement
+{% endblock %} 
+
+{% block content %}
+    {% csrf_token %}                        <!--This is to protect against CSRF attacks-->
+    <!-- Selection Form -->
+    <p>
+        <form method="GET" id="ordersForm" autocomplete="off">     
+            <div class="row g-3 bg-info {{theme.justify}} {{theme.align}} {{theme.border}}">
+                <div class="col-md-4 {{theme.align}} {{theme.justify}}">
+                    <label>Starting Order*:&nbsp; </label>
+                    <select id="id_StartingOrder" class="{{theme.dropdown}}" name="startingOrder"></select>
+                </div>
+                <div class="col-md-4 {{theme.align}} {{theme.justify}}">
+                    <label>Ending Order:&nbsp; </label>
+                    <select id="id_EndingOrder" class="{{theme.dropdown}}" name="endingOrder"></select>
+                </div>
+                <div class="col btn-group {{theme.align}} {{theme.textJustify}}">
+                    <button type="submit" class="{{theme.buttonSecondary}}">          <!--Save Button-->
+                        Refresh
+                    </button>
+                    <button id="submit" class="{{theme.buttonSecondary}}" onclick="showSelectionBox()" type="button">          <!--Save Button-->
+                        Make Order
+                    </button>
+                </div>
+            </div>
+            <div class="row g-1 {{theme.justify}} {{theme.align}} {{theme.border}}">
+                <div class="col">
+                    <select id="id_Inventories" class="{{theme.dropdown}}" name="inventories" multiple 
+                    onchange="changeDropdown(this)" data-placeholder="Select Multiple Inventories"></select>
+                </div>
+                <div class="col {{theme.align}} {{theme.justify}}">
+                    <div class="input-group">
+                        <input id="id_Search" type="text" class="{{theme.textInput}}" placeholder="Apply Search"
+                        value="{{search}}" name="search" onkeyup="changeSearch(this)">
+                        <button type="button" class="{{theme.minusButton}}" onclick="clearInput(this)">
+                            <span>X</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </p>
+
+    <!-- Inventory Requirement Summary -->
+    <div id="requirementTable" name="reqTable">
+        <form method="POST" id="requirementForm" autocomplete="off">
+            <div class="row mt-3 {{theme.justify}} {{theme.textJustify}} bg-dark text-white" row="0">
+                <div class="col col-md-1">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        <input class="form-check-input" type="checkbox" value="" onclick="selectAll(this)">
+                    </div>
+                </div>
+                <div class="col col-md-1">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Order
+                    </div>
+                </div>
+                <div class="col col-md-2">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Code
+                    </div>
+                </div>
+                <div class="col col-md-3">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Name
+                    </div>
+                </div>
+                <div class="col col-md-2">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Variant
+                    </div>
+                </div>
+                <div class="col col-md-1">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Required
+                    </div>
+                </div>
+                <div class="col col-md-1">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Ordered
+                    </div>
+                </div>
+                <div class="col col-md-1">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Balance
+                    </div>
+                </div>
+            </div>
+            {% for data in requirement %}
+                <div class="row mt-1 {{theme.justify}} {{theme.textJustify}}" row="{{forloop.counter}}">
+                    <div class="col col-md-1">
+                        <input class="form-check-input" type="checkbox">
+                    </div>
+                    <div class="col col-md-1" chosen="true">
+                        <input type="text" class="{{theme.textInput}}" value="{{data.OrderNumber}}" name="WorkOrder" readonly>
+                    </div>
+                    <div class="col col-md-2" chosen="true">
+                        <input type="text" class="{{theme.textInput}}" value="{{data.InventoryCode}}" name="InventoryCode" readonly>
+                    </div>
+                    <div class="col col-md-3" chosen="true">
+                        <input type="text" class="{{theme.textInput}}" value="{{data.InventoryName}}" name="InventoryCode" readonly>
+                    </div>
+                    <div class="col col-md-2">
+                        <input type="text" class="{{theme.textInput}}" value="{{data.Variant}}" name="Variant" readonly>
+                    </div>
+                    <div class="col col-md-1">
+                        <input type="number" class="{{theme.textInput}}" value="{{data.Required}}" name="Quantity" readonly>
+                    </div>
+                    <div class="col col-md-1">
+                        <input type="number" class="{{theme.textInput}}" value="{{data.Ordered}}" name="Ordered" readonly>
+                    </div>
+                    <div class="col col-md-1">
+                        <input type="number" class="{{theme.textInput}}" value="{{data.ToOrder}}" name="ToOrder">
+                    </div>
+                </div>
+            {% endfor %}
+        </form>
+    </div>
+
+    <script> //To run when the page loads
+        window.addEventListener('load', async () => {
+            const loadingContainer = document.createElement('div');
+            loadingContainer.style.position = 'fixed';
+            loadingContainer.style.top = '200px';
+            loadingContainer.style.left = '10px';
+            loadingContainer.style.zIndex = '9999';
+            
+            const loadingAnimation = document.createElement('div');
+            loadingAnimation.className = '{{theme.loadingIcon}}';
+            loadingContainer.appendChild(loadingAnimation);
+            
+            document.body.appendChild(loadingContainer);
+
+            //orders Dropdown
+            let response = await fetch('/options/workorders');
+            const orders = await response.json();
+            await appendOptions('id_StartingOrder', orders, Number("{{startingOrder}}"));
+            //Since this dropdown is not part of a table, we need manually apply search box
+            $("#id_StartingOrder").chosen({
+                search_contains: true,
+                width: "100%"
+            });
+
+            await appendOptions('id_EndingOrder', orders, Number("{{endingOrder}}"));
+            //Since this dropdown is not part of a table, we need manually apply search box
+            $("#id_EndingOrder").chosen({
+                search_contains: true,
+                width: "100%"
+            });
+
+            const inventories = {{ invs|safe }};
+            await appendOptions('id_Inventories', inventories);
+            $("#id_Inventories").chosen({
+                search_contains: true,
+                width: "100%"
+            });
+
+            //Remove loading animation
+            loadingContainer.remove();
+        });
+    </script>
+
+    <script> //To filter rows based on search items
+        function changeSearch(source) {
+            //get search term and make it case insenstive
+            const searchTerm = source.value.toLowerCase();
+
+            //Get the table in html form
+            const tableHTML = document.getElementById('requirementTable').children[0].children;
+
+            //Conver the html table to array and remove header
+            const table = Array.from(tableHTML);
+            table.shift();
+
+            for (const row of table) {
+                const cells = row.children;
+
+                let matchFlag = false;
+                for (const cell of cells) {
+                    const cellValue = cell.children[0].value.toLowerCase();
+
+                    if (cellValue.includes(searchTerm)) {
+                        matchFlag = true;
+                        break;
+                    }
+                }
+                row.style.display = matchFlag ? '':'none';
+            }
+
+            //Set the table unchecked to avoid any problems
+            const checkBox = tableHTML[0].children[0].children[0].children[0];
+            checkBox.checked = false;
+            selectAll(checkBox);
+        }
+
+        function changeDropdown(source) {
+            const options = source.options;
+            const selectedCodes = [];
+            for (const option of options) {
+                if (option.selected) {
+                    selectedCodes.push(option.value)
+                }
+            }
+
+            //Get the table in html form
+            const tableHTML = document.getElementById('requirementTable').children[0].children;
+
+            //Conver the html table to array and remove header
+            const table = Array.from(tableHTML);
+            table.shift();
+
+            if (selectedCodes.length != 0) {
+                for (const row of table) {
+                    const code = row.children[2].children[0].value;
+    
+                    const flag = selectedCodes.includes(code);
+                    row.style.display = flag ? '':'none';
+                }
+            } else {
+                for (const row of table) {
+                    row.style.display = '';
+                }
+            }
+            
+            //Set the table unchecked to avoid any problems
+            const checkBox = tableHTML[0].children[0].children[0].children[0];
+            checkBox.checked = false;
+            selectAll(checkBox);
+        }
+
+        function clearInput(source) {
+            searchBox = source.parentElement.children[0];
+            searchBox.value = '';
+            changeSearch(searchBox);
+            searchBox.focus();
+        }
+    </script>
+
+    <script> //To select all visible rows
+        function selectAll(box) {
+            const checkStatus = box.checked;
+
+            const table = box.parentElement.parentElement.parentElement.parentElement.parentElement;
+            const numberOfRows = table.children[0].children.length;
+
+            for (let i=1; i<numberOfRows;i++) {
+                const row = table.querySelector('[row="'+i+'"]');
+                const rowCheck = row.children[0].children[0];
+                const filterStatus = (row.style.display === '');
+
+                rowCheck.checked = false;
+
+                if (filterStatus) {
+                    rowCheck.checked = checkStatus;
+                }
+            } 
+        }
+    </script>
+
+    <script> //To make PO for selected items
+        async function showSelectionBox() {
+            const response = await fetch('/options/suppliers');
+            const suppliers = await response.json();
+
+            showDropDown(suppliers, generatePO, null, true);
+        }
+        
+        async function generatePO() {
+            const dialogBox = document.getElementById('dropdown');
+            const supplier = dialogBox.children[0].children[0].children[1].children[0].children[0].value;
+
+            if (supplier == 'null') {
+                alert('Please select a supplier.');
+                showSelectionBox();
+                return;
+            }
+
+            const requirementForm = document.getElementById('requirementForm');
+            const rows = requirementForm.children;
+
+            let selectedRows = [];
+
+            for (const row of rows) {
+                const rowNumber = row.getAttribute('row');
+                const checkStatus = row.children[0].children[0].checked;
+
+                if (rowNumber>0 && checkStatus) {
+                    selectedRows.push(row);
+                }
+            }
+            delete rows, requirementForm;
+            //Prepare data to a server readable format
+            let data = {};
+            for (const row of selectedRows) {
+                data = preparePOData(row, data);
+                data['Supplier_'+row.getAttribute('row')] = supplier;
+            }
+
+            data = JSON.stringify(data);
+            
+            if (data == '{}') {
+                //Show this message to user.
+                alert('Nothing is selected.');
+                return;
+            } else {                
+                const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+                //console.log (csrf);
+                const response = await fetch('', {
+                    method: 'POST',
+                    body: data,
+                    headers: { "X-CSRFToken": csrf},
+                });
+                
+                if (response.status == 200) {
+                    const poNumber = await response.text();
+                    window.open(poNumber+'/edit', '_blank');
+                    window.location.reload();
+                } else {
+                    const errorMessage = await response.text();
+                    showMessage(errorMessage);
+                }
+            }
+        }
+
+        function preparePOData(row, data) {
+            const inventoryCode = row.querySelector("[name='InventoryCode']").value;
+            const variant = row.querySelector("[name='Variant']").value;
+            const orderQuantity = row.querySelector("[name='ToOrder']").value;
+            const workOrder = row.querySelector("[name='WorkOrder']").value
+            const rowNum = row.getAttribute('row');
+
+            data['data_InventoryCode_'+rowNum] = inventoryCode;
+            data['data_Variant_'+rowNum] = variant;
+            data['data_OrderQuantity_'+rowNum] = orderQuantity;
+            data['data_WorkOrder_'+rowNum] = workOrder;
+
+
+            return data;
+        }
+
+    </script>
+
+    <script> //Run this at the time of page loading. This should be at the end of all scripts
+        searchBox = document.getElementById('id_Search');
+        changeSearch(searchBox);
+    </script>
+
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Apparel Management
+{% endblock %} 
+
+{% block content %}
+    <div class="row">
+        <div class="col" id="nofiticationTemplate" style="cursor: pointer;" hidden onclick="openNotification(this)">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Ttile</h5>
+                    <p class="card-text">Body</p>
+                </div>
+                <div class="card-footer text-muted">Footer</div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="notificationDetail" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+        <div class="{{theme.dialogBox}}">
+            <div class="modal-content">
+                <div class="{{theme.dialogBoxHeader}}">
+                    <div class="{{theme.dialogBoxTitle}}" id="modalLabel">
+                        Title
+                    </div>
+                </div>
+                <div class="{{theme.dialogBoxBody}}">
+                    <div class="row mt-1 {{theme.justify}} {{theme.textJustify}}">
+                        Body
+                    </div>
+                </div>
+                <div class="btn-group {{theme.dialogBoxFooter}}">
+                    <button type="button" class="{{theme.buttonBasic}}" data-bs-dismiss="modal">Mark Read</button>
+                    <a class="{{theme.buttonBasic}}" role="button" target="_blank">View Detail</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>    //This code runs when the page is fully loaded.
+        window.addEventListener('load', async () => {
+            await showNotifications();
+        });
+    </script>
+
+    <script>    //To handle a notification
+        async function openNotification(source) {
+            const id = source.getAttribute('id');
+
+            const response = await fetch(`notification/${id}/view`);
+
+            if (response.ok) {
+                const notification = await response.json();
+                const notificationDetail = document.getElementById('notificationDetail');
+
+                const title = notificationDetail.children[0].children[0].children[0].children[0];
+                const body = notificationDetail.children[0].children[0].children[1].children[0];
+                const buttons = notificationDetail.children[0].children[0].children[2].children;
+
+                title.textContent = notification.title;
+                body.textContent = notification.body;
+
+                buttons[0].setAttribute('onclick', `markRead(${id})`);
+                buttons[1].setAttribute('href', notification.url);
+
+                new bootstrap.Modal(notificationDetail).show();
+            } else {
+                error = response.text();
+                showMessage(error);
+            }
+        }
+
+        async function markRead(id) {
+            const response = await fetch(`notification/${id}/read`);
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                error = response.text();
+                showMessage(error);
+            }
+        }
+    </script>
+
+    <script>    //To show all notifications on the page
+        async function showNotifications() {
+            const template = document.getElementById('nofiticationTemplate');
+            const body = template.parentElement;
+            
+            const notifications = {{data|safe}};
+            
+            for (const notification of notifications) {
+                const notificationBox = template.cloneNode(true);
+                
+                notificationBox.removeAttribute('hidden');
+
+                const widthClass = notificationBox.getAttribute('class');
+                notificationBox.setAttribute('class', `${widthClass}-${notification.width}`);
+
+                const titleBox = notificationBox.children[0].children[0].children[0];
+                const bodyBox = notificationBox.children[0].children[0].children[1];
+                const footerBox = notificationBox.children[0].children[1];
+
+                titleBox.textContent = notification.title;
+                bodyBox.textContent = notification.body;
+                footerBox.textContent = `${notification.timePassed} ago`;
+                notificationBox.setAttribute('id', notification.id);
+
+                body.appendChild(notificationBox);
+
+            }
+        }
+    </script>
+{% endblock %}

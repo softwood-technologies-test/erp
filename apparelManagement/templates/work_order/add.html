@@ -1,0 +1,342 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Work Order Addition
+{% endblock %} 
+
+{% block content %}
+    {% csrf_token %}          <!--This is to protect against CSRF attacks-->
+
+    <!-- The main Order form-->
+    <p>
+        <form method="POST" id="orderForm" autocomplete="off">
+            <div class="row g-3 bg-info {{theme.justify}} {{theme.align}} {{theme.border}}">
+                <div class="col col-md-3 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>Order#:&nbsp; </label>
+                    {{order.WorkOrderNumber}}
+                </div>
+                <div class="col col-md-3 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>Style:&nbsp; </label>
+                    <select id="id_Style" class="{{theme.dropdown}}" name="Style" onchange="getCustomerForStyle(this.value)"> </select>
+                </div>
+                <div class="col col-md-2 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>Customer:&nbsp; </label>
+                    <select id="id_Customer" class="{{theme.dropdown}}" name="Customer"> </select>
+                </div>
+                <div class="col col-md-2 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>DD:&nbsp; </label>
+                    {{order.DeliveryDate}}
+                </div>
+                <div class="col col-md-2 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>Type:&nbsp; </label>
+                    <select id="id_Type" class="{{theme.dropdown}}" name="Type"> </select>
+                </div>
+                <div class="col col-md-2 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>Currency:&nbsp; </label>
+                    <select id="id_Currency" class="{{theme.dropdown}}" name="Currency">
+                    </select>
+                </div>
+                <div class="col col-md-2 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>Price:&nbsp; </label>
+                    {{order.Price}}
+                </div>
+                <div class="col col-md-3 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>Agency:&nbsp; </label>
+                    {{order.Agent}}
+                </div>
+                <div class="col col-md-2 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>Commission(%):&nbsp; </label>
+                    {{order.Commission}}
+                </div>
+                <div class="col col-md-2 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>Excess Cut(%):&nbsp; </label>
+                    {{order.ExcessCut}}
+                </div>
+                <div class="col col-md-1 {{theme.align}} {{theme.textJustify}}">
+                    <button id="submit" class="{{theme.buttonSecondary}}" onclick="submitForms()" type="button">          <!--Save Button-->
+                        Save
+                    </button>
+                </div>
+            </div>
+        </form>
+    </p>
+    <!-- Buttons-->
+    <p>
+        <div class="row g-3 {{theme.justify}} {{theme.align}} {{theme.textJustify}}">
+            <div class = "col col-md-3 {{theme.justify}}">
+                <button id="btn_calculateVar" class="{{theme.buttonBasic}}" type="button" onclick="calculateVariants()">
+                    Calculate Variants
+                </button>
+            </div>
+        </div>
+    </p>
+
+    <!--Variants Table-->
+    <div id="variantTable" name="varTable">
+        <form method="POST" id="variantForm" autocomplete="off">
+            <div class="row mt-3 {{theme.justify}} {{theme.textJustify}} bg-dark text-white" row="0">    
+                <div class="col col-md-3">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Variant Name
+                    </div>
+                </div>
+                <div class="col col-md-3">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Quantity
+                    </div>
+                </div>
+                <div class="col col-md-3">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Description
+                    </div>
+                </div>
+                <div class="col col-md-1">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Actions
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-1 {{theme.justify}} {{theme.textJustify}}" row="1">
+                <div class="col col-md-3">
+                    {{variants.Name}}
+                </div>
+                <div class="col col-md-3">
+                    {{variants.Quantity}}
+                </div>
+                <div class="col col-md-3">
+                    {{variants.Description}}
+                </div>
+                <div class="col col-md-1">
+                    <button class="{{theme.plusButton}}" type="button" onclick="addRow(this)">
+                        <span>+</span>
+                    </button>
+                    <button class="{{theme.minusButton}}" type="button" onclick="removeRow(this)">
+                        <span>-</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script> //To change view based on selected button
+        const tableIds = ['variantTable',];
+
+        function changeView(tableId){
+            let tables = [];
+
+            for (let i=0;i<tableIds.length;i++) {
+                tables[i] = document.getElementById (tableIds[i]);
+                const button = document.getElementById('btn_'+tableIds[i]);
+                if (tableId === tableIds[i]){
+                    tables[i].style.display = "";
+                    button.className = "{{theme.buttonSelected}}";
+                } else {
+                    tables[i].style.display = "none";
+                    button.className = "{{theme.buttonBasic}}";
+                }
+                
+            }
+        }
+
+    </script>
+
+    <script> //To run after page loads.
+        window.addEventListener('load', async () => {
+            //Show loading animation to user
+            showLoadingIcon();
+
+            //Styles Dropdown
+            let response = await fetch('/options/styles');
+            const styles = await response.json();
+            await appendOptions('id_Style', styles);
+            //Since this dropdown is not part of a table, we need manually apply search box
+            $("#id_Style").chosen({
+                search_contains: true,
+                width: "100%"
+            });
+            
+            //Customer dropdown
+            response = await fetch('/options/customers');
+            const customers = await response.json();
+            await appendOptions('id_Customer', customers);
+            //Since this dropdown is not part of a table, we need manually apply search box
+            $("#id_Customer").chosen({
+                search_contains: true,
+                width: "100%"
+            });
+
+            //Order Types dropdown
+            response = await fetch('/options/ordertypes');
+            const orderTypes = await response.json();
+            await appendOptions('id_Type', orderTypes, selected='Export');
+
+            //Currencies dropdown
+            response = await fetch('/options/currencies');
+            const currencies = await response.json();
+            await appendOptions('id_Currency', currencies, selected='USD');
+
+            //addSearchBox();
+
+            delete response;
+
+            hideLoadingIcon();
+        });
+    </script>
+
+    <script> //To set customer based on the customer in style.
+        async function getCustomerForStyle(style) {
+            const styleOptions = document.getElementById('id_Style').options;
+            
+            let customer = '';
+            for (const option of styleOptions) {
+                if (option.value === style) {
+                    customer = option.text.split(' -')[0];
+                    break;
+                }
+            }
+            customerSelect = document.getElementById('id_Customer');
+            $("#id_Customer").chosen("destroy");
+            for (const option of customerSelect.options) {
+                if (style==='null' && option.value === 'null') {
+                    option.selected = true;
+                    break;
+                }else if(customer === option.value) {
+                    option.selected = true;
+                    break;
+                } 
+            }
+            $("#id_Customer").chosen({
+                search_contains: true,
+                width: "100%"
+            });
+
+            await calculateVariants();
+        }
+    </script>
+
+    <script> //To Generate Variants from selected style
+        async function calculateVariants() {
+            const styleCode = document.getElementById('id_Style').value;
+            const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
+            data = JSON.stringify(styleCode);
+            
+            const objects = document.getElementById('variantTable').children[0].children;
+            const variantTableRows = Array.from(objects).slice(1);
+            
+            for (let i=1; i<variantTableRows.length; i++) {
+                variantTableRows[i].remove();
+            }
+
+            const rowToCopy = variantTableRows[0];
+            const table = rowToCopy.parentElement;
+            
+            //Delete previous data from the row to copy.
+            const cols = rowToCopy.children;
+            for (const col of cols) {
+                col.children[0].value = null;
+            }
+
+            const response = await fetch('/workorder/variants/calculate', {
+                method: 'POST',
+                body: data,
+                headers: { "X-CSRFToken": csrf},
+            });  
+            const variants = await response.json();
+
+            rowToCopy.children[0].children[0].value = variants?.[0] ?? null;
+
+            for (let i=1; i<variants.length; i++) {
+                const copy = rowToCopy.cloneNode(true);
+                copy.setAttribute("row",i+1);
+
+                const variantBox = copy.children[0].children[0];
+                variantBox.value = variants[i];
+            
+                table.appendChild(copy);
+            }
+        }
+
+    </script>
+
+    <script> //To send data to server
+        function submitForms() {
+            const allForms = document.forms;
+
+            const orderForm = allForms['orderForm']; 
+            const variantForm = allForms['variantForm'];
+            
+            const order = orderForm.elements;
+
+            let data = {};
+             
+            //Prepare the data for Style Group
+            let group = 'order';
+            for (const element of order) {
+                if (element.name) {
+                    data[group+'_'+element.name] = element.value;
+                }   
+            }
+
+            //Prepare the data for variant Group
+            data = formToTable('variant', variantForm, data);
+            
+            submitData(data)
+        }
+
+        //Convert data to Json and send to server
+        async function submitData(obj) {
+            const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+            
+            const data = JSON.stringify(obj);
+            
+            //console.log (csrf);
+            const response = await fetch('', {
+              method: 'POST',
+              body: data,
+              headers: { "X-CSRFToken": csrf},
+            });
+
+            if (response.status == 200) {
+                const woNumber = await response.text();
+                window.location.href = woNumber+'/edit';
+            } else {
+                const errorMessage = await response.text();
+                showMessage(errorMessage);
+            }
+        }
+
+        function formToTable(group, form, data){
+            let rows = form.querySelectorAll('.row');
+            //Remove unnecesary rows
+            rows = dropElements(rows);
+
+            for (const row of rows) {
+                let rowNum = row.getAttribute('row');
+                let cols = row.children;
+                //Remove unnecessary columns
+                cols = dropElements(cols, cols.length-1, cols.length-1);
+
+                for (const col of cols) {
+                    name = col.firstElementChild.name+'_'+rowNum;
+                    value = col.firstElementChild.value;
+                    data[group+'_'+name] = value;                    
+                }
+            }
+            return data;
+        }
+
+        function dropElements(obj, startFrom=0, endAt=0) {
+            const arr = Object.values(obj);
+
+            arr.splice(startFrom, endAt - startFrom + 1);
+
+            return arr;
+        }
+    </script>
+
+    <script> //To run at the start of the page. This should be at the end of the page.
+        //changeView ('variantTable');
+        $('#id_DeliveryDate').datepicker();
+    </script>
+{% endblock %}

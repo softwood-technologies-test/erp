@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Issuances
+{% endblock %}
+
+{% block content %}
+    <div class="{{theme.border}}">
+        {% csrf_token %}
+        <p>
+            <div class="row g-3 {{theme.justify}} {{theme.align}}">
+                <div class="col {{theme.textJustify}}">
+                    <form action="{% url 'issue' %}" method="get">
+                        <select id="departmentFilter" name="departmentFilter" onchange="this.form.submit()" class="{{theme.dropdown}}">
+                            <option value="">  ---------  </option>
+                        </select>
+                        <input type="hidden" name="searchTerm" value="{{ searchTerm }}">
+                        <input type="hidden" name="requisitionNumber" value="{{ selectedRequisition }}">
+                    </form>
+                </div>
+                <div class="col btn-group {{theme.textJustify}}">
+                    <a id="editIssueButton" class="{{theme.buttonBasic}}" role="button" target="_blank">Edit</a>
+                </div>
+            </div>
+        </p>
+        <p>
+            <div class="row g-0 {{theme.justify}} {{theme.align}}">
+                <div class="col-2 {{theme.textJustify}}">
+                    <form action="{% url 'issue' %}" method="get">
+                        <input type="number" min="1" class="{{theme.textInput}} w-100" name="issuanceNumber" placeholder="Issuance Number" value="{{selectedIssuance}}">
+                </div>
+                <div class="col-8 {{theme.textJustify}}">
+                    <input type="text" class="{{theme.textInput}} w-100" name="searchTerm" placeholder="Search Issuances" value="{{searchTerm}}">
+                </div>
+                <div class="col-2 btn-group {{theme.textJustify}}">
+                    <button type="submit" class="{{theme.buttonBasic}}">Search</button>
+                </div>
+                    <input type="hidden" name="departmentFilter" value="{{ selectedDepartment }}">
+                    </form>
+            </div>
+        </p>
+    </div>
+
+    <div id ="requisitionTable">
+        <table class="{{theme.table}}">
+            <tr class = "{{theme.tableHead}}">
+                <th scope="col">Select</th>
+                <th scope="col">Issuance#</th>
+                <th scope="col">Date</th>
+                <th scope="col">Department</th>
+                <th scope="col">Received By</th>
+                <th scope="col">Inventory (Top 3)</th>
+                <th scope="col">Order (Top 3)</th>
+            </tr>
+            <tbody id="tableData" class = "{{theme.tableBody}}">
+                {% for data in issue %}
+                    <tr>
+                        <td><input type="radio" name="item_checkbox"></td>
+                        <td class="requisition">{{ data.id }}</td>
+                        <td>{{ data.IssuanceDate }}</td>
+                        <td>{{ data.Department }}</td>
+                        <td>{{ data.ReceivedBy }}</td>
+                        <td>{{ data.Name }}</td>
+                        <td>{{ data.WorkOrder }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>//To change the buttons based on selection in radio
+        $("#tableData").on("click", "input[type='radio']", function() {
+            //Get the code against seletion
+            const selectedCode = $(this).closest("tr").find("td.requisition").text();
+            
+            //Find and link the edit card button to the selected code            
+            button = $("#editIssueButton");           
+            button.attr("href", "/issuance/" + selectedCode + "/edit");
+        });
+    </script>
+
+    <script>//To run when the page loads
+        window.addEventListener('load', async () => {
+            //Departments dropdown
+            let response = await fetch('/options/departments');
+            const departments = await response.json();
+            await appendOptions('departmentFilter', departments, '{{selectedDepartment}}');
+            //Apply Search Box
+            $("#departmentFilter").chosen({
+                search_contains: true,
+                width: "100%"
+            });
+        });
+    </script>
+{% endblock %}

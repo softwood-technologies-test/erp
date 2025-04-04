@@ -1,0 +1,107 @@
+{% extends 'quality_base.html' %}
+
+
+{% block title %}
+    Trim Audit History
+{% endblock title %}
+
+{% block content %}
+    <p>
+        <div class="{{theme.border}}">
+            <div class="row g-3 {{theme.justify}} {{theme.align}}">
+                <form action="{% url 'trimAudit' %}" method="get" class="d-flex align-items-center">
+                    <div class="col {{theme.textJustify}}">
+                        <select id="supplierFilter" name="supplier" onchange="this.form.submit()" class="{{theme.dropdown}}">
+                        </select>
+                    </div>
+                    <div class="col {{theme.textJustify}}">
+                        <select id="inventoryFilter" name="inventory" onchange="this.form.submit()" class="{{theme.dropdown}}">
+                        </select>
+                    </div>
+                    <div class="col {{theme.textJustify}}">
+                        <input id="startDate" type="text" name="startDate" placeholder="Start Date" value="{{startDate|date:'m/d/Y'}}" class="{{theme.textInput}}" autocomplete="off">
+                    </div>
+                    <div class="col {{theme.textJustify}}">
+                        <input id="endDate" type="text" name="endDate" placeholder="End Date" value="{{endDate}}" class="{{theme.textInput}}" autocomplete="off">
+                    </div>
+                    <div class="col {{theme.textJustify}}">
+                        <select name="approval" onchange="this.form.submit()" class="{{theme.dropdown}}">
+                            <option value="false" {% if approval == False %} selected {% endif %}>Rejected</option>
+                            <option value="true" {% if approval == True %} selected {% endif %}>Approved</option>
+                            <option value="null" {% if approval == None %} selected {% endif %}>All</option>
+                        </select>
+                    </div>
+                    <div class="col btn-group {{theme.textJustify}}">
+                        <button type="submit" class="{{theme.buttonBasic}}">Filter</button>
+                    </div>
+                </form>
+                </div>
+            </div>
+        </div>
+    </p>
+   
+    <div id="AuditsTable">
+        <table class="{{theme.table}}">
+            <tr class = "{{theme.tableHead}}">
+                <th scope="col">Receipt Date</th>
+                <th scope="col">Receipt #</th>
+                <th scope="col">Name</th>
+                <th scope="col">Supplier</th>
+                <th scope="col">Approval</th>
+                <th scope="col">Comments</th>
+            </tr>
+            <tbody id="tableData" class = "{{theme.tableBody}}">
+                {% for data in audits %}
+                <tr>
+                    <td>{{ data.ReceiptDate }}</td>
+                    <td><a href="/trims/audit/{{ data.RecInventory }}/edit">{{ data.ReceiptNumber }}</a></td>
+                    <td>{{ data.Name }}</td>
+                    <td>{{ data.Supplier }}</td>
+                    <td>
+                        {% if data.Approval %}
+                            <span class="{{theme.trueClass}}">{{theme.trueValue}}</span>
+                        {% else %}
+                            <span class="{{theme.falseClass}}">{{theme.falseValue}}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ data.QualityComments }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>    //To run when the page loads
+        window.addEventListener('load', async () => {
+            //Show loading icon to users
+            showLoadingIcon();
+
+            let response = await fetch('/options/suppliers');
+            const suppliers = await response.json();
+            await appendOptions('supplierFilter', suppliers, '{{supplier}}');
+            //Since this dropdown is not part of a table, we need manually apply search box
+            $("#supplierFilter").chosen({
+                search_contains: true,
+                width: "100%"
+            });
+
+            response = await fetch('/options/inventories?group=Trim');
+            const inventories = await response.json();
+            await appendOptions('inventoryFilter', inventories, '{{inventory}}');
+            //Since this dropdown is not part of a table, we need manually apply search box
+            $("#inventoryFilter").chosen({
+                search_contains: true,
+                width: "100%"
+            });
+
+            //Remove loading animation
+            hideLoadingIcon();
+        });
+    </script>
+
+    <script>
+        $('#startDate').datepicker();
+        $('#endDate').datepicker();
+    </script>
+{% endblock content %}
+    

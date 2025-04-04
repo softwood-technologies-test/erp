@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Style Cards
+{% endblock %}
+
+{% block content %}
+  <div class="{{theme.border}}">
+    <p>
+      <div class="row g-3 {{theme.justify}} {{theme.align}}">
+        <div class="col col-md-4 {{theme.textJustify}}">
+          <form action="{% url 'Style' %}" method="get">
+            <select name="customerFilter" onchange="this.form.submit()" class="{{theme.dropdown}}">
+              <option value="">  ---------  </option>
+              {% for data in customers %}
+              <option value="{{ data }}"
+                  {% if data == selectedCustomer %}
+                  selected
+                  {% endif %}>
+                  {{ data }}
+              </option>
+              {% endfor %}
+              </select>
+            <input type="hidden" name="search_term" value="{{ searchTerm }}">
+          </form>
+        </div>
+
+        <div class="col btn-group {{theme.textJustify}}">
+          <a class="{{theme.buttonBasic}}" href="/style/add" role="button" target="_blank">Add Style</a>
+          <a id="copyCardButton" class="{{theme.buttonBasic}}" role="button" target="_blank">Copy Style</a>
+          <a id="editCardButton" class="{{theme.buttonBasic}}" role="button" target="_blank">Edit Style</a>
+          <a id="deleteCardButton" class="{{theme.buttonBasic}}" role="button" target="_blank">Delete Style</a>
+        </div>
+      </div> 
+    </p>
+    <p>
+      <div class="row g-0 {{theme.justify}} {{theme.align}}">
+        <div class="col col-md-10 {{theme.textJustify}}">
+          <form action="{% url 'Style' %}" method="get">
+            <input type="text" class="{{theme.textInput}} w-100" name="search_term" placeholder="Search styles" value="{{searchTerm}}">
+            <input type="hidden" name="customerFilter" value="{{ selectedCustomer }}">
+        </div>
+        <div class="col col-md-2 {{theme.textJustify}}">
+            <button type="submit" class="{{theme.buttonBasic}}">Search</button>
+        </div>
+          </form> 
+      </div>
+    </p> 
+  </div>
+
+  <div id ="style_Table">   
+    <table class="{{theme.table}}">  
+      <tr class = "{{theme.tableHead}}">
+        <th scope="col">Select</th>
+        <th scope="col">StyleCode</th>
+        <th scope="col">StyleName</th>
+        <th scope="col">Customer</th>
+        <th scope="col">Category</th>
+        <th scope="col">Notes</th>   
+      </tr>
+      <tbody id="tableData" class = "{{theme.tableBody}}">
+        {% for data in style %}
+        <tr>
+          <td><input type="radio" name="item_checkbox"></td>
+          <td class="code">{{ data.StyleCode }}</td>
+          <td>{{ data.StyleName }}</td>
+          <td>{{ data.Customer_id }}</td>
+          <td>{{ data.Category }}</td>
+          <td>{{ data.Notes }}</td>
+        </tr>     
+        {% endfor %}    
+      </tbody>
+    </table>
+  </div>
+  <div class="{{theme.pagination}}">
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}&customerFilter={{ selectedCustomer }}&search_term={{ searchTerm }}"
+      class = "{{theme.linkPaginaton}}">
+        Previous
+      </a>
+    {% else %}
+      <a>
+        Previous
+      </a>
+    {% endif %} &nbsp|&nbsp
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}&customerFilter={{ selectedCustomer }}&search_term={{ searchTerm }}"
+      class = "{{theme.linkPaginaton}}">
+        Next
+      </a>
+      {% else %}
+        <a>
+          Next
+        </a>
+    {% endif %} &nbsp|&nbsp
+    {% if page_obj.has_previous %}
+      <a href="?page=1&customerFilter={{ selectedCustomer }}&search_term={{ searchTerm }}"
+      class = "{{theme.linkPaginaton}}">
+        First
+      </a>
+      {% else %}
+        <a>
+          First
+        </a>
+    {% endif %} &nbsp|&nbsp
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.paginator.num_pages }}&customerFilter={{ selectedCustomer }}&search_term={{ searchTerm }}"
+      class = "{{theme.linkPaginaton}}">
+        Last
+      </a>
+      {% else %}
+        <a>
+          Last
+        </a>
+    {% endif %} &nbsp|&nbsp
+    
+    <form action="" method="get">
+      <select name="page" onchange="this.form.submit()" class="{{theme.dropdownPagination}}">
+        {% for page_num in page_obj.paginator.page_range %}
+          <option value="{{ page_num }}" 
+            {% if page_num == page_obj.number %}
+              selected
+            {% endif %}>
+              {{ page_num }}
+          </option>
+        {% endfor %}
+      </select>
+      <input type="hidden" name="customerFilter" value="{{ selectedCustomer }}">
+      <input type="hidden" name="search_term" value="{{ searchTerm }}">
+    </form>
+  </div>
+
+  <script>
+      //This functions changes the edit card button based on selection in radio
+      $("#tableData").on("click", "input[type='radio']", function() { 
+          //Get the code against seletion
+          const selectedCode = $(this).closest("tr").find("td.code").text();
+
+          //Find and link the edit card button to the selected code
+          var button = $("#copyCardButton");           
+          button.attr("href", "/style/" + selectedCode + "/copy");
+          
+          button = $("#editCardButton");           
+          button.attr("href", "/style/" + selectedCode + "/edit");
+
+          button = $("#deleteCardButton");
+          button.attr("href", "/style/" + selectedCode + "/delete");
+      });          
+  </script>
+{% endblock %}

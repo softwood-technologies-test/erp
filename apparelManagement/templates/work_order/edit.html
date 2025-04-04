@@ -1,0 +1,700 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Work Order Update
+{% endblock %} 
+
+{% block content %}
+    {% csrf_token %}                        <!--This is to protect against CSRF attacks-->        
+    <!-- The main Order form-->
+    <p>
+        <form method="POST" id="orderForm" autocomplete="off">
+            <div class="row g-3 bg-info {{theme.justify}} {{theme.align}} {{theme.border}}">
+                <div class="col-3 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>Order#:&nbsp; </label>
+                    <input id="id_Order" type="text" class="{{theme.textInput}}" value="{{order.WorkOrderNumber}}" name="WorkOrderNumber" readonly>
+                </div>
+                <div class="col-3 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>Style:&nbsp; </label>
+                    <select id="id_Style" class="{{theme.dropdown}}" name="Style"></select>
+                </div>
+                <div class="col-2 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>Customer:&nbsp; </label>
+                    <select id="id_Customer" class="{{theme.dropdown}}" name="Customer"></select>
+                </div>
+                <div class="col-2 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>OD:&nbsp; </label>
+                    <input type="text" class="{{theme.textInput}}" value="{{order.orderDate|date:'m/d/Y'}}" name="OrderDate" id="orderDate">
+                </div>
+                <div class="col-2 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>DD:&nbsp; </label>
+                    <input type="text" class="{{theme.textInput}}" value="{{order.deliveryDate|date:'m/d/Y'}}" name="DeliveryDate" id="deliveryDate">
+                </div>
+                <div class="col-2 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>Type:&nbsp; </label>
+                    <select id="id_Type" class="{{theme.dropdown}}" name="Type"></select>
+                </div>
+                <div class="col-2 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>Price:&nbsp; </label>
+                    <input type="number" class="{{theme.textInput}}" value="{{order.price}}" name="Price">
+                </div>
+                <div class="col-2 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>Currency:&nbsp; </label>
+                    <select id="id_Currency" class="{{theme.dropdown}}" name="Currency"></select>
+                </div>
+                <div class="col-2 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>Wastage%:&nbsp; </label>
+                    <input type="number" class="{{theme.textInput}}" value="{{order.excessCut}}" name="ExcessCut">
+                </div>
+                <div class="col-2 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>Quantity:&nbsp; </label>
+                    <input type="number" class="{{theme.textInput}}" value="{{order.quantity}}" name="Quantity" id="id_orderQty" readonly>
+                </div>
+                <div class="col-2 btn-group {{theme.align}} {{theme.textJustify}}">
+                    <a id="submit" class="{{theme.buttonSecondary}}" role="button" onclick="submitForms()">Save</a>
+                    <a class="{{theme.buttonSecondary}}" role="button" onclick="showPrintBox()">Print</a>
+                </div>
+            </div>
+        </form>
+    </p>
+    <!-- The action Buttons -->
+    <p>
+        <div class="row g-3 {{theme.justify}} {{theme.align}} {{theme.textJustify}}">
+            <div class = "col btn-group {{theme.justify}}">
+                <a class="{{theme.buttonSecondary}}" href="/purchaseorder/autogen?startingOrder={{order.WorkOrderNumber}}"
+                    role="button" target="_blank">Auto Req.</a>
+                <button id="btn_calculatReq" class="{{theme.buttonSecondary}}" type="button" onclick="showSelectionBox()">
+                    Generate PO
+                </button>
+                <button id="btn_calculatReq" class="{{theme.buttonSecondary}}" type="button" onclick="calculateRequirement()">
+                    Calculate Req.
+                </button>
+            </div>
+            <div class = "col btn-group {{theme.justify}}">
+                <button id="btn_requirementTable" class="{{theme.buttonBasic}}" type="button" onclick="changeView('requirementTable')">Requirement</button>
+                <button id="btn_variantTable" class="{{theme.buttonBasic}}" type="button" onclick="changeView('variantTable')">Variants</button>
+            </div>
+        </div>
+    </p>
+
+    <!-- Order Inventory Requirement -->
+    <div>
+        <div id="requirementTable" name="reqTable" style="max-height: 300px; min-height: 300px; overflow-y: auto;">
+            <form method="POST" id="requirementForm" autocomplete="off">
+                <div class="row mt-3 {{theme.justify}} {{theme.textJustify}} bg-dark text-white sticky-top" row="0">    
+                    <div class="col-1">
+                        <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                            <input class="form-check-input" type="checkbox" value="" onclick="selectAll(this)">
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                            Inventory
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                            Variant
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                            Required
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                            Ordered
+                        </div>
+                    </div>
+                    <div class="col-1">
+                        <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                            Received
+                        </div>
+                    </div>
+                    <div class="col-1">
+                        <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                            Actions
+                        </div>
+                    </div>
+                </div>
+                {% for data in req %}
+                    <div class="row mt-1 {{theme.justify}} {{theme.textJustify}}" row="{{forloop.counter}}" onclick="getContextForRequirement(this)">
+                        <div class="col-1">
+                            <input class="form-check-input" type="checkbox">
+                        </div>
+                        <div class="col-3">
+                            <input type="text" value="{{data.InventoryCode}}" name="InventoryCode" hidden>
+                            <input type="text" class="{{theme.textInput}}" value="{{data.InventoryName}}" name="InventoryName">
+                        </div>
+                        <div class="col-2">
+                            <input type="text" class="{{theme.textInput}}" value="{{data.Variant}}" name="Variant">
+                        </div>
+                        <div class="col-2">
+                            <input type="number" class="{{theme.textInput}}" value="{{data.Quantity}}" name="Quantity">
+                        </div>
+                        <div class="col-2">
+                            <input type="number" class="{{theme.textInput}}" value="{{data.Ordered}}" name="Ordered">
+                        </div>
+                        <div class="col-1">
+                            <input type="number" class="{{theme.textInput}}" value="{{data.Received}}" name="Received">
+                        </div>
+                        <div class="col-1">
+                            <button class="{{theme.plusButton}}" type="button" onclick="addRow(this)">
+                                <span>+</span>
+                            </button>
+                            <button class="{{theme.minusButton}}" type="button" onclick="removeRow(this)">
+                                <span>-</span>
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </form>
+        </div>
+        <div style="max-height: 300px; overflow-y: auto;" id="requirementDetails" class="{{theme.border}}" hidden>
+            <div class="row {{theme.justify}} {{theme.textJustify}} bg-dark text-white sticky-top">
+                <div class="col">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Receipt No.
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Type
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Date
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Total Qty
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Allocated Qty
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Destination
+                    </div>
+                </div>    
+            </div>
+        </div>
+    </div>
+
+    <div id="variantTable" name="varTable">
+        <form method="POST" id="variantForm" autocomplete="off">
+            <div class="row mt-3 {{theme.justify}} {{theme.textJustify}} bg-dark text-white" row="0">    
+                <div class="col col-md-3">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Variant Name
+                    </div>
+                </div>
+                <div class="col col-md-3">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Quantity
+                    </div>
+                </div>
+                <div class="col col-md-3">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Description
+                    </div>
+                </div>
+                <div class="col col-md-1">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Actions
+                    </div>
+                </div>
+            </div>
+            {% for data in var %}
+                <div class="row mt-1 {{theme.justify}} {{theme.textJustify}}" row="{{forloop.counter}}">
+                    <div class="col col-md-3">
+                        <input type="text" class="{{theme.textInput}}" value="{{data.Name}}" name="Name"> 
+                    </div>
+                    <div class="col col-md-3">
+                        <input type="number" class="{{theme.textInput}}" value="{{data.Quantity}}" name="Quantity" onchange="calculateQuantity()"> 
+                    </div>
+                    <div class="col col-md-3">
+                        <input type="text" class="{{theme.textInput}}" value="{{data.Description}}" name="Description"> 
+                    </div>
+                    <div class="col col-md-1">
+                        <button class="{{theme.plusButton}}" type="button" onclick="addRow(this)">
+                            <span>+</span>
+                        </button>
+                        <button class="{{theme.minusButton}}" type="button" onclick="removeRow(this)">
+                            <span>-</span>
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </form>
+    </div>
+
+    <script> //To change view based on selected button
+        const tableIds = ['variantTable', 'requirementTable'];
+
+        function changeView(tableId){
+            let tables = [];
+
+            for (let i=0;i<tableIds.length;i++) {
+                tables[i] = document.getElementById (tableIds[i]);
+                const button = document.getElementById('btn_'+tableIds[i]);
+                if (tableId === tableIds[i]){
+                    tables[i].style.display = "";
+                    button.className = "{{theme.buttonSelected}}";
+                } else {
+                    tables[i].style.display = "none";
+                    button.className = "{{theme.buttonBasic}}";
+                }
+                
+            }
+        }
+
+    </script>
+
+    <script> //To run when the page loads
+        window.addEventListener('load', async () => {
+            showLoadingIcon();
+
+            //Styles Dropdown
+            let response = await fetch('/options/styles');
+            const styles = await response.json();
+            await appendOptions('id_Style', styles, "{{order.style}}");
+            //Since this dropdown is not part of a table, we need manually apply search box
+            $("#id_Style").chosen({
+                search_contains: true,
+                width: "100%"
+            });
+
+            //Customer dropdown
+            response = await fetch('/options/customers');
+            const customers = await response.json();
+            await appendOptions('id_Customer', customers, "{{order.customer}}");
+            //Since this dropdown is not part of a table, we need manually apply search box
+            $("#id_Customer").chosen({
+                search_contains: true,
+                width: "100%"
+            });
+
+            //Order Types dropdown
+            response = await fetch('/options/ordertypes');
+            const orderTypes = await response.json();
+            await appendOptions('id_Type', orderTypes, "{{order.type}}");
+
+            //Currencies dropdown
+            response = await fetch('/options/currencies');
+            const currencies = await response.json();
+            await appendOptions('id_Currency', currencies, "{{order.currency}}");
+
+            //Apply search on dropdown where needed
+            await addSearchBox();
+
+            hideLoadingIcon();
+        });
+    </script>
+
+    <script> //To Generate Requirement from selected style
+        async function calculateRequirement(){
+            showLoadingIcon();
+
+            const styleCode = document.getElementById('id_Style').value;
+            const orderNumber = document.getElementById('id_Order').value;
+            data = JSON.stringify({styleCode:styleCode, orderNumber:orderNumber});
+            
+            const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
+            const objects = document.getElementById('requirementTable').children[0].children;
+            const reqTableRows = Array.from(objects).slice(1);
+
+            for (let i=1; i<reqTableRows.length; i++) {
+                reqTableRows[i].remove();
+            }
+
+            const rowToCopy = reqTableRows[0];
+            const table = rowToCopy.parentElement;
+
+            removeSearchBox();
+
+            //Delete previous data from the row to copy.
+            const cols = rowToCopy.children;
+            for (const col of cols) {
+                col.children[0].value = null;
+            }
+
+            const response = await fetch('/workorder/requirement/calculate', {
+                method: 'POST',
+                body: data,
+                headers: { "X-CSRFToken": csrf},
+            });
+            const requirement = await response.json();
+            
+            rowToCopy.children[0].children[0].checked = false;
+            rowToCopy.children[1].children[0].value = requirement?.[0].InventoryCode ?? null;
+            rowToCopy.children[2].children[0].value = requirement?.[0].Variant ?? null;
+            rowToCopy.children[3].children[0].value = requirement?.[0].Required ?? null;
+            rowToCopy.children[4].children[0].value = requirement?.[0].Ordered ?? null;
+            rowToCopy.children[5].children[0].value = requirement?.[0].Received ?? null;
+
+            for (let i=1; i<requirement.length; i++) {
+                const copy = rowToCopy.cloneNode(true);
+                copy.setAttribute("row",i+1);
+
+                copy.children[1].children[0].value = requirement?.[i].InventoryCode ?? null;
+                copy.children[2].children[0].value = requirement?.[i].Variant ?? null;
+                copy.children[3].children[0].value = requirement?.[i].Required ?? null;
+                copy.children[4].children[0].value = requirement?.[i].Ordered ?? null;
+                copy.children[5].children[0].value = requirement?.[i].Received ?? null;
+            
+                table.appendChild(copy);
+            }
+
+            addSearchBox();
+
+            unsavedDataFlag = true;
+            
+            hideLoadingIcon();
+        }
+    </script>
+
+    <script> //To get context for requirement
+        async function getContextForRequirement(row) {
+            const table = row.parentElement;
+            const detailsTable = table.parentElement.parentElement.children[1];
+
+            //Remove highlight from all rows
+            for (const child of table.children) {
+                child.classList.remove('bg-secondary');
+            }
+
+            //Make the row highlighted
+            const classList = row.classList;
+            if (classList.length < 5) {
+                classList.add('bg-secondary')
+            }
+
+            const inventory = row.children[1].children[0].value;
+            const variant = row.children[2].children[0].value;
+            const workOrder = window.location.pathname.split('/')[2];
+            
+            let data = {
+                'inventory': inventory,
+                'variant': variant,
+                'workOrder': workOrder,
+            };
+            const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+            data = JSON.stringify(data);
+
+            const response = await fetch( '/workorder/requirement/get',{
+                method: 'POST',
+                body: data,
+                headers: { "X-CSRFToken": csrf}, 
+            });
+
+            if (response.ok) {
+                const history = await response.json();
+
+                for (let i = detailsTable.children.length - 1; i > 0; i--) {
+                    detailsTable.removeChild(detailsTable.children[i]);
+                }
+                
+                for (const data of history) {
+                    const row = document.createElement('div');
+                    row.className = "row mt-1 {{theme.justify}} {{theme.textJustify}}"; 
+                    const sequence = ['ReceiptNo','Type','ReceiptDate','TotalQuantity','AllocatedQuantity','Supplier']; 
+                    for (const heading of sequence) {
+                        const col = document.createElement('div');
+                        col.className = "col";
+
+                        const cell = document.createElement('input');
+                        cell.className = "{{theme.textInput}}";
+                        cell.type = "text";
+                        cell.value = data[heading];
+                        cell.readOnly = true;
+
+                        //Set the link for PO/Rec etc
+                        if (heading === 'ReceiptNo') {
+                            cell.style.cursor = 'pointer';
+                            cell.addEventListener('click', () => {
+                                window.open('/'+data['url'], '_blank'); // Open in new tab
+                            });
+                        }
+                        
+                        col.appendChild(cell);
+                        row.appendChild(col);        
+                    }
+                    detailsTable.appendChild(row);
+                }
+                detailsTable.hidden = false;
+            } else {
+                detailsTable.hidden = true;
+                const errorMessage = await response.text();
+                showMessage(errorMessage);
+            }
+        }
+    </script>
+
+    <script> //To select all unordered rows of a table
+        function selectAll(box) {
+            const checkStatus = box.checked;
+
+            const table = box.parentElement.parentElement.parentElement.parentElement.parentElement;
+            const numberOfRows = table.children[0].children.length;
+
+            for (let i=1; i<numberOfRows;i++) {
+                const row = table.querySelector('[row="'+i+'"]');
+                const rowCheck = row.children[0].children[0];
+                const required = row.children[3].children[0].value;
+                const ordered = row.children[4].children[0].value;
+
+                rowCheck.checked = false;
+
+                if (required-ordered > 0) {
+                    rowCheck.checked = checkStatus;
+                }
+            }
+        }
+    </script>
+
+    <script> //Update quantity from variants
+        function calculateQuantity() {
+            const rows = document.getElementById('variantTable').children[0].children;
+            const qtyBox = document.getElementById('id_orderQty');
+
+            let qty = 0;
+
+            for (const row of rows) {
+                let varQty = row.children[1].children[0].value;
+                varQty = +varQty || 0;
+                qty = qty + varQty;
+            }
+            qtyBox.value = qty;
+        }
+    </script>
+
+    <script> //To print work order
+        function showPrintBox() {
+            const options = [
+                {'value':'CUT', 'text':'Cutting'},
+                {'value':'F&T', 'text':'Fabric and Trims'},
+                {'value':'PST', 'text': 'Production Status'},
+            ];
+            const selectedOption = 'F&T';
+
+            showDropDown(options, printWO, selectedOption);
+        }
+
+        async function printWO() {
+            showLoadingIcon();
+            //Get the foramt selected by user
+            const dialogBox = document.getElementById('dropdown');
+            const selectedFormat = dialogBox.children[0].children[0].children[1].children[0].children[0].value;
+
+            const orderBox = document.getElementById('id_Order');
+            const orderNumber = parseInt(orderBox.value);
+
+            const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
+            const obj = {'format':selectedFormat};
+            const data = JSON.stringify(obj);
+
+            const response = await fetch('/workorder/'+orderNumber+'/print', {
+                method: 'POST',
+                body: data,
+                headers: { "X-CSRFToken": csrf, "Accept": "application/pdf"},
+            });
+
+            if (response.ok) {
+                const pdfBlob = await response.blob();
+
+                const pdfURL = URL.createObjectURL(pdfBlob);
+
+                const win = window.open(pdfURL, '_blank');
+
+                win.onafterprint = function() {
+                    URL.revokeObjectURL(pdfURL);
+                };
+            } else {
+                errorMessage = await response.text();
+                showMessage(errorMessage);
+            }
+            
+            hideLoadingIcon();
+        }
+    </script>
+
+    <script> //To generate PO of selected items.
+        async function showSelectionBox() {
+            const response = await fetch('/options/suppliers');
+            const suppliers = await response.json();
+
+            showDropDown(suppliers, generatePO, null, true);
+        }
+        async function generatePO(){
+            const dialogBox = document.getElementById('dropdown');
+            const supplier = dialogBox.children[0].children[0].children[1].children[0].children[0].value;
+
+            const workOrder = window.location.pathname.split('/')[2];
+            if (supplier == 'null') {
+                alert('Please select a supplier.');
+                showSelectionBox();
+                return;
+            }
+
+            const requirementForm = document.getElementById('requirementForm');
+            const rows = requirementForm.children;
+
+            let selectedRows = [];
+
+            for (const row of rows) {
+                const rowNumber = row.getAttribute('row');
+                const checkStatus = row.children[0].children[0].checked;
+
+                if (rowNumber>0 && checkStatus) {
+                    selectedRows.push(row);
+                }
+            }
+            delete rows, requirementForm;
+            
+            //Prepare data to a server readable format
+            let data = {};
+            for (const row of selectedRows) {
+                data = preparePOData(row, data);
+                data['data_Supplier_'+row.getAttribute('row')] = supplier;
+            }
+            data = JSON.stringify(data);
+
+            if (data == '{}') {
+                //Show this message to user.
+                alert('Nothing is selected.');
+                return;
+            } else {
+                const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+                //console.log (csrf);
+                const response = await fetch('/purchaseorder/add/fromworkorder/'+workOrder, {
+                    method: 'POST',
+                    body: data,
+                    headers: { "X-CSRFToken": csrf},
+                });
+
+                if (response.status == 200) {
+                    const poNumber = await response.text();
+                    window.open('/purchaseorder/'+poNumber+'/edit', '_blank');
+
+                    await calculateRequirement();
+                } else {
+                    const errorMessage = await response.text();
+                    showMessage(errorMessage);
+                }
+            }            
+        }
+
+        function preparePOData (row, data) {
+            const inventoryCode = row.querySelector("[name='InventoryCode']").value;
+            const variant = row.querySelector("[name='Variant']").value;
+            const reqQuantity = row.querySelector("[name='Quantity']").value;
+            const orderQuantity = row.querySelector("[name='Ordered']").value;
+            const rowNum = row.getAttribute('row');
+            
+            data['data_InventoryCode_'+rowNum] = inventoryCode;
+            data['data_Variant_'+rowNum] = variant;
+            data['data_ReqQuantity_'+rowNum] = reqQuantity;
+            data['data_OrderQuantity_'+rowNum] = orderQuantity;
+
+            return data;
+        }
+    </script>
+
+    <script> //To send data to server
+        async function submitForms() {
+            showLoadingIcon();
+            const allForms = document.forms;
+
+            const orderForm = allForms['orderForm']; 
+            const variantForm = allForms['variantForm'];
+            const requirementForm = allForms['requirementForm'];
+
+            const order = orderForm.elements;
+
+            let data = {};
+            //Prepare the data for Order Group
+            let group = 'order';
+            for (const element of order) {
+                if (element.name) {
+                    data[group+'_'+element.name] = element.value;
+                }   
+            }
+
+            //Prepare the data for variant Group
+            data = formToTable('variant', variantForm, data);
+
+            //Prepare the data for Requirement Group
+            data = formToTable('requirement', requirementForm, data);
+
+            await submitData(data);
+            hideLoadingIcon();
+        }
+
+        async function submitData(obj) {
+            const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
+            const data = JSON.stringify(obj);
+            
+            //console.log (csrf);
+            const response = await fetch('', {
+                method: 'POST',
+                body: data,
+                headers: { "X-CSRFToken": csrf},
+            });
+
+            if (response.ok) {
+                const selectedTable = await response.text();
+
+                unsavedDataFlag = false;
+            } else {
+                const errorMessage = await response.text();
+                showMessage(errorMessage);
+            }
+        }
+
+        function formToTable(group, form, data){
+            let rows = form.querySelectorAll('.row');
+            //Remove unnecesary rows
+            rows = dropElements(rows);
+
+            for (const row of rows) {
+                let rowNum = row.getAttribute('row');
+                let cols = row.children;
+                //Remove unnecessary columns
+                cols = dropElements(cols, cols.length-1, cols.length-1);
+
+                for (const col of cols) {
+                    name = col.firstElementChild.name+'_'+rowNum;
+                    value = col.firstElementChild.value;
+                    data[group+'_'+name] = value;                    
+                }
+            }
+            return data;
+        }
+
+        function dropElements(obj, startFrom=0, endAt=0) {
+            const arr = Object.values(obj);
+
+            arr.splice(startFrom, endAt - startFrom + 1);
+
+            return arr;
+        }
+    </script>
+
+    <script> //To run at the start of the page. This should be at the end of the page.
+        changeView('requirementTable')
+
+        $('#orderDate').datepicker();
+        $('#deliveryDate').datepicker();
+    </script>
+
+{% endblock %}

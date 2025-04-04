@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Copying Inventory
+{% endblock %}
+
+{% block content %}
+    <br><br>
+    <form method="POST" >
+        {% csrf_token %}          <!--This is to protect against CSRF attacks-->
+        <input id = "source" type="text" class="{{theme.textInput}}" name="source" value="{{source}}">
+        <p class="help-text">Copy From:</p> 
+        <input id = "target" type="text" class="{{theme.textInput}}" name="target" value="{{source}}">
+        <p class="help-text">New Code:</p>
+        <button type="submit" class="btn btn-dark">
+        Create Copy
+        </button>
+    </form> 
+{% endblock %}

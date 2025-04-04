@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Style Card Addition
+{% endblock %} 
+
+{% block content %}
+    {% csrf_token %}          <!--This is to protect against CSRF attacks-->
+    <!-- The main style form-->
+    <p>
+        <form method="POST" id="styleForm">
+            <div class="row g-3 bg-info {{theme.justify}} {{theme.align}} {{theme.border}}">
+                <div class="col-4 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>Code:&nbsp; </label>
+                    {{style.StyleCode}}
+                </div>
+                <div class="col-4 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>Name:&nbsp; </label>
+                    {{style.StyleName}}
+                </div>
+                <div class="col-4 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>Notes:&nbsp; </label>
+                    {{style.Notes}}  
+                </div>
+                <div class="col-4 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>Customer:&nbsp; </label>
+                    <select id="id_Customer" class="{{theme.dropdown}}" name="Customer"> </select>
+                </div>
+                <div class="col-4 d-flex {{theme.align}} {{theme.justify}}">
+                    <label>Category:&nbsp; </label>
+                    <select id="id_Category" class="{{theme.dropdown}}" name="Category"> </select>
+                </div>
+                <div class="col-4 {{theme.align}} {{theme.textJustify}}">
+                    <button id="submit" class="{{theme.buttonSecondary}}" onclick="submitForms()" type="button">          <!--Save Button-->
+                        Save
+                    </button>
+                </div>
+            </div>
+        </form>
+    </p>
+     <!-- Buttons to go to each of a style's detail table-->
+    <p>
+        <div class="row g-3 {{theme.justify}} {{theme.align}} {{theme.textJustify}}">
+            <div class = "col btn-group {{theme.justify}}">
+                <button id="btn_variantTable" class="{{theme.buttonBasic}}" type="button" onclick="changeView('variantTable')">Variant</button>
+                <button id="btn_routeTable" class="{{theme.buttonBasic}}" type="button" onclick="changeView('routeTable')">Route</button>
+            </div>
+        </div>
+    </p>
+      
+    <div id="variantTable" name="variantTable">
+        <form method="POST" id="variantForm">
+            <div class="row mt-3 {{theme.justify}} {{theme.textJustify}} bg-dark text-white" row="0">
+                <div class="col-5">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Variant 1
+                    </div>
+                </div>
+                <div class="col-5">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Variant 2
+                    </div>
+                </div>
+                <div class="col-1">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Actions
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-1 {{theme.justify}} {{theme.textJustify}}" row="1">
+                <div class="col-5">
+                    {{var.Variant1}}
+                </div>
+                <div class="col-5">
+                    {{var.Variant2}}
+                </div>
+                <div class="col-1">
+                    <button class="{{theme.plusButton}}" type="button" onclick="addRow(this)">
+                        <span>+</span>
+                    </button>
+                    <button class="{{theme.minusButton}}" type="button" onclick="removeRow(this)">
+                        <span>-</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div id="routeTable" name="routeTable">
+        <form method="POST" id="routeForm">
+            <div class="row mt-3 {{theme.justify}} {{theme.textJustify}} bg-dark text-white" row="0">
+                <div class="col-5">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Sequence
+                    </div>
+                </div>
+                <div class="col-5">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Stage
+                    </div>
+                </div>
+                <div class="col-1">
+                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                        Actions
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-1 {{theme.justify}} {{theme.textJustify}}" row="1">
+                <div class="col-5" deletable="true">
+                    {{route.Sequence}}
+                </div>
+                <div class="col-5">
+                    <select class="{{theme.dropdown}}" id="id_RouteType_1" name="type">
+                    </select>
+                </div>
+                <div class="col-1">
+                    <button class="{{theme.plusButton}}" type="button" onclick="addRow(this)">
+                        <span>+</span>
+                    </button>
+                    <button class="{{theme.minusButton}}" type="button" onclick="removeRow(this)">
+                        <span>-</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script> //To change view based on selected button
+        const tableIds = ['variantTable','routeTable'];
+
+        function changeView(tableId){
+            let tables = [];
+
+            for (let i=0;i<tableIds.length;i++) {
+                tables[i] = document.getElementById (tableIds[i]);
+                const button = document.getElementById('btn_'+tableIds[i]);
+                if (tableId === tableIds[i]){
+                    tables[i].style.display = "";
+                    button.className = "{{theme.buttonSelected}}";
+                } else {
+                    tables[i].style.display = "none";
+                    button.className = "{{theme.buttonBasic}}";
+                }
+                
+            }
+        }
+    </script>
+    
+    <script> //To send data to server
+        async function submitForms() {
+            const allForms = document.forms;
+
+            const styleForm = allForms['styleForm']; 
+            const variantForm = allForms['variantForm'];
+            const routeForm = allForms['routeForm'];
+
+            const style = styleForm.elements;
+
+            let data = {};
+             
+            //Prepare the data for Style Group
+            let group = 'style';
+            for (const element of style) {
+                if (element.name) {
+                    data[group+'_'+element.name] = element.value;
+                }   
+            }
+
+            //Prepare the data for variant Group
+            data = formToTable('variant', variantForm, data);
+            data = formToTable('route', routeForm, data);
+
+            await submitData(data);
+        }
+
+        //Convert data to Json and send to server
+        async function submitData(obj) {
+            const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+            
+            const data = JSON.stringify(obj);
+            
+            //console.log (csrf);
+            
+            try {
+                const response = await fetch('add', {
+                    method: 'POST',
+                    body: data,
+                    headers: { "X-CSRFToken": csrf},
+                  });
+                if (response.status == 200) {
+                    const styleName = await response.text();
+                    window.location.href = styleName+'/edit';
+                } else {
+                    const errorMessage = await response.text()
+                    showMessage(errorMessage);
+                }
+            } catch (error) {
+                alert(`Error occured. Check with administrator. Error: ${errorMessage}`);
+            }
+        }
+
+        function formToTable(group, form, data){
+            let rows = form.querySelectorAll('.row');
+            //Remove unnecesary rows
+            rows = dropElements(rows);
+
+            for (const row of rows) {
+                let rowNum = row.getAttribute('row');
+                let cols = row.children;
+                //Remove unnecessary columns
+                cols = dropElements(cols, cols.length-1, cols.length-1);
+
+                for (const col of cols) {
+                    name = col.firstElementChild.name+'_'+rowNum;
+                    value = col.firstElementChild.value;
+                    data[group+'_'+name] = value;                    
+                }
+            }
+            return data;
+        }
+
+        function dropElements(obj, startFrom=0, endAt=0) {
+            const arr = Object.values(obj);
+
+            arr.splice(startFrom, endAt - startFrom + 1);
+
+            return arr;
+        }
+    </script>
+
+    <script> //This code runs when the page elements are fully loaded.        
+        window.addEventListener('load', async () => {
+            showLoadingIcon();
+
+            //Customer dropdown
+            let response = await fetch('/options/customers');
+            const customers = await response.json();
+            await appendOptions('id_Customer', customers);
+            //Since this dropdown is not part of a table, we need manually apply search box
+            $("#id_Customer").chosen({
+                search_contains: true,
+                width: "100%"
+            });
+
+            //Style Categories dropdown
+            response = await fetch('/options/categories');
+            const categories = await response.json();
+            await appendOptions('id_Category', categories);
+
+            //Production stages dropdown
+            response = await fetch('/options/prodstages');
+            const routeTypes = await response.json();
+            await appendOptions(`id_RouteType_1`, routeTypes);
+
+            addSearchBox();
+
+            delete response;
+
+            hideLoadingIcon();
+        });
+    </script>
+
+    <script> //To run when page loads. It should be at the end of the page.  
+        changeView ('variantTable');
+    </script>
+{% endblock %}

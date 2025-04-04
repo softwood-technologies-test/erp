@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Copying Inventory
+{% endblock %}
+
+{% block content %}
+    <br><br>
+    <form method="POST" autocomplete="off">
+        {% csrf_token %}          <!--This is to protect against CSRF attacks-->
+        <input type="text" class="{{theme.textInput}}" name="source" value="{{code}}">
+        <p class="help-text">Copy From:</p> 
+        <input type="text" class="{{theme.textInput}}" name="target">
+        <p class="help-text">New Code:</p>
+        <button type="submit" class="btn btn-dark">
+        Create Copy
+        </button>
+    </form>
+
+    <script>    //To show error if provided
+        window.addEventListener('load', async () => {
+            const errorMessage = "{{message}}";
+            const errorBox = document.getElementById('error')
+            if (errorMessage) {
+                showMessage(errorMessage);
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,169 @@
+{% extends 'base_print.html' %}
+
+{% block title %}
+    {{order.id}}
+{% endblock %}
+
+{% block content %}
+    <div class="row mt-3 {{theme.justify}} {{theme.align}} {{theme.textJustify}}">
+        <div class="col col-md-11 {{theme.align}} {{theme.justify}} {{theme.border}}">
+            <div class="fs-lg fw-bold">SOFTWOOD PRIVATE LIMITED</div>
+            <div class="fs-md">20-KM Off Ferozpur Road, Main Bazar Youhannabad, Lahore</div>
+            <div class="fs-md">+92 042 35951191, info@softwoodtextiles.com</div>
+        </div>
+    </div>
+    
+    <div class="row mt-0 {{theme.justify}} {{theme.align}} {{theme.textJustify}}">
+        <div class="col col-md-11 {{theme.align}} {{theme.justify}} {{theme.border}}">
+            <div class="fs-md fw-bold">Purchase Order</div>
+        </div>
+    </div>
+    <div class="row mt-3 {{theme.justify}} {{theme.align}} {{theme.textJustify}}">
+        <div class="col col-md-2 {{theme.align}} {{theme.justify}} {{theme.border}}">
+            <div class="fs-md fw-bold">Order Date:</div>
+        </div>
+        <div class="col col-md-4 {{theme.align}} {{theme.justify}} {{theme.border}}">
+            <div class="fs-md">{{order.OrderDate|date:'d-m-Y'}}</div>
+        </div>
+        <div class="col col-md-1"></div>
+        <div class="col col-md-2 {{theme.align}} {{theme.justify}} {{theme.border}}">
+            <div class="fs-md fw-bold">Delivery:</div>
+        </div>
+        <div class="col col-md-2 {{theme.align}} {{theme.justify}} {{theme.border}}">
+            <div class="fs-md">{{order.DeliveryDate|date:'d-m-Y'}}</div>
+        </div>
+    </div>
+    <div class="row mt-0 {{theme.justify}} {{theme.align}} {{theme.textJustify}}">
+        <div class="col col-md-2 {{theme.align}} {{theme.justify}} {{theme.border}}">
+            <div class="fs-md fw-bold">Supplier:</div>
+        </div>
+        <div class="col col-md-4 {{theme.align}} {{theme.justify}} {{theme.border}}">
+            <div class="fs-md">{{order.Supplier.Name}}</div>
+        </div>
+        <div class="col col-md-1"></div>
+        <div class="col col-md-2 {{theme.align}} {{theme.justify}} {{theme.border}}">
+            <div class="fs-md fw-bold">PO Number:</div>
+        </div>
+        <div class="col col-md-2 {{theme.align}} {{theme.justify}} {{theme.border}}">
+            <div class="fs-md">{{order.id}}</div>
+        </div>
+    </div>
+
+    <div id="invtable">
+        <div class="row mt-3 {{theme.justify}} {{theme.textJustify}} {{theme.border}}">
+            <div class="col col-md-3">
+                <div class="fs-md fw-bold">Inventory</div>
+            </div>
+            <div class="col col-md-2">
+                <div class="fs-md fw-bold">Variant</div>
+            </div>
+            <div class="col col-md-2">
+                <div class="fs-md fw-bold">Unit</div>
+            </div>
+            <div class="col col-md-1">
+                <div class="fs-md fw-bold">Quantity</div>
+            </div>
+            <div class="col col-md-2">
+                <div class="fs-md fw-bold">Price</div>
+            </div>
+            <div class="col col-md-1">
+                <div class="fs-md fw-bold">Amount</div>
+            </div>
+        </div>
+        {% for data in inv %}
+            <div class="row mt-0 {{theme.justify}} {{theme.textJustify}} {{theme.border}}">
+                <div class="col col-md-3">
+                    <div class="fs-md">{{data.Name}}</div>
+                </div>
+                <div class="col col-md-2">
+                    <div class="fs-md">{{data.Variant}}</div>
+                </div>
+                <div class="col col-md-2">
+                    <div class="fs-md">{{data.Unit}}</div>
+                </div>
+                <div class="col col-md-1">
+                    <div class="fs-md">{{data.Quantity}}</div>
+                </div>
+                <div class="col col-md-2">
+                    <div class="fs-md">{{data.Currency}} {{data.Price}}</div>
+                </div>
+                <div class="col col-md-1">
+                    <div class="fs-md">{{data.Value}}</div>
+                </div>
+            </div>
+            <div class="row {{theme.justify}} {{theme.textJustify}}">
+                <div class="col col-md-2">
+                    <div class="fs-md fw-bold">Work order</div>
+                </div>
+                <div class="col col-md-3">
+                    <div class="fs-md fw-bold">Style</div>
+                </div>
+                <div class="col col-md-2">
+                    <div class="fs-md fw-bold">Delivery Date</div>
+                </div>
+                <div class="col col-md-1">
+                    <div class="fs-md fw-bold">Quantty</div>
+                </div>
+            </div>
+            {% for allocOption in alloc %}
+                {% if allocOption.POInvId == data.id %}
+                    <div class="row {{theme.justify}} {{theme.textJustify}}">
+                        <div class="col col-md-2">
+                            <div class="fs-md">{{allocOption.WorkOrder}}</div>
+                        </div>
+                        <div class="col col-md-3">
+                            <div class="fs-md">{{allocOption.StyleCode}}</div>
+                        </div>
+                        <div class="col col-md-2">
+                            <div class="fs-md">{{allocOption.DeliveryDate|date:'d-m-Y'}}</div>
+                        </div>
+                        <div class="col col-md-1">
+                            <div class="fs-md">{{allocOption.Quantity}}</div>
+                        </div>
+                    </div>
+                {% endif %}
+                
+            {% endfor %}
+        {% endfor %}
+    </div>
+    
+    <div class="fixed-bottom" style="bottom: 50px;">
+        <div class="row mt-3 justify-content-end {{theme.align}} {{theme.textJustify}}">
+            <div class="col col-md-2 {{theme.align}} {{theme.justify}} {{theme.border}}"> 
+                <div class="fs-md fw-bold">Net Amount:</div>
+            </div>
+            <div class="col col-md-2 {{theme.align}} {{theme.justify}} {{theme.border}}"> 
+                <div class="fs-md">{{summary.Currency}} {{summary.beforeTaxAmount}}</div>
+            </div>
+            <div class="col col-md-2"></div> 
+        </div>
+        <div class="row mt-0 justify-content-end {{theme.align}} {{theme.textJustify}}">
+            <div class="col col-md-2 {{theme.align}} {{theme.justify}} {{theme.border}}"> 
+                <div class="fs-md fw-bold">Tax Amount:</div>
+            </div>
+            <div class="col col-md-2 {{theme.align}} {{theme.justify}} {{theme.border}}"> 
+                <div class="fs-md">{{summary.Currency}} {{summary.tax}}</div>
+            </div>
+            <div class="col col-md-2"></div> 
+        </div>
+        <div class="row mt-0 justify-content-end {{theme.align}} {{theme.textJustify}}">
+            <div class="col col-md-2 {{theme.align}} {{theme.justify}} {{theme.border}}"> 
+                <div class="fs-lg fw-bold">Grand Total:</div>
+            </div>
+            <div class="col col-md-2 {{theme.align}} {{theme.justify}} {{theme.border}}"> 
+                <div class="fs-lg fw-bold">{{summary.Currency}} {{summary.afterTaxAmount}}</div>
+            </div>
+            <div class="col col-md-2"></div> 
+        </div>
+    </div>
+{% endblock %}
+
+{% block footer %}
+<div class="fixed-bottom">
+    <div class="row mt-3 {{theme.justify}} {{theme.textJustify}} border-top border-dark ">  
+        <div class="fs-sm">
+            This is a system generated document and does not require signature.
+        </div>
+    </div>  
+</div>
+{% endblock %}

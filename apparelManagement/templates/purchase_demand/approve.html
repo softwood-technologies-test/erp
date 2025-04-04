@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Pending Approvals
+{% endblock %} 
+
+{% block content %}
+    
+<div class="row mt-3 {{theme.justify}} {{theme.textJustify}}">
+    <div class="col-8 {{theme.border}}">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row mt-1">
+                <div class="col-3 d-flex">
+                    <label>Approval:&nbsp; </label>
+                    <select class="{{theme.dropdown}}" name="Approval">
+                        <option value="None" selected> Pending </option>
+                        <option value="true"> Approve </option>
+                        <option value="false"> Reject </option>
+                    </select>
+                </div>
+                <div class="col-4">
+                    <button type="submit" class="{{theme.buttonSecondary}}">
+                        Save Response
+                    </button>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col">
+                    <textarea class="{{theme.textInput}}" rows="5" readonly>
+                        {{demand.Description}}
+                    </textarea>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="col-4 {{theme.border}}">
+        <div class="{{theme.border}}">
+            Some background data for the PD
+        </div>
+    </div>
+</div>
+{% endblock %}

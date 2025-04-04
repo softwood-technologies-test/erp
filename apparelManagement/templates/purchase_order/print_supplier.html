@@ -1,0 +1,179 @@
+{% extends 'base_print.html' %}
+
+{% block title %}
+    {{order.id}}
+{% endblock %}
+
+{% block content %}
+    <div class="row mt-3 {{theme.justify}} {{theme.align}} {{theme.textJustify}}">
+        <div class="col col-md-11 {{theme.align}} {{theme.justify}} {{theme.border}}">
+            <div class="{{theme.titleBold}}">SOFTWOOD PRIVATE LIMITED</div>
+            <div class="{{theme.headingNormal}}">20-KM Off Ferozpur Road, Main Bazar Youhannabad, Lahore</div>
+            <div class="{{theme.headingNormal}}">+92 042 35951191, info@softwoodtextiles.com</div>
+        </div>
+    </div>
+    
+    <div class="row mt-3 {{theme.justify}} {{theme.align}} {{theme.textJustify}}">
+        <div class="col col-md-11 {{theme.align}} {{theme.justify}} {{theme.border}}">
+            <div class="{{theme.headingBold}}">Purchase Order</div>
+        </div>
+    </div>
+
+    <div class="row mt-3 {{theme.justify}} {{theme.align}} {{theme.textJustify}}">
+        <div class="col col-md-2 {{theme.align}} {{theme.justify}} {{theme.border}}">
+            <div class="{{theme.headingBold}}">Order Date:</div>
+        </div>
+        <div class="col col-md-4 {{theme.align}} {{theme.justify}} {{theme.border}}">
+            <div class="{{theme.headingNormal}}">{{order.OrderDate|date:'d-m-Y'}}</div>
+        </div>
+        <div class="col col-md-1"></div>
+        <div class="col col-md-2 {{theme.align}} {{theme.justify}} {{theme.border}}">
+            <div class="{{theme.headingBold}}">Delivery:</div>
+        </div>
+        <div class="col col-md-2 {{theme.align}} {{theme.justify}} {{theme.border}}">
+            <div class="{{theme.headingNormal}}">{{order.DeliveryDate|date:'d-m-Y'}}</div>
+        </div>
+    </div>
+    
+    <div class="row mt-0 {{theme.justify}} {{theme.align}} {{theme.textJustify}}">
+        <div class="col col-md-2 {{theme.align}} {{theme.justify}} {{theme.border}}">
+            <div class="{{theme.headingBold}}">Supplier:</div>
+        </div>
+        <div class="col col-md-4 {{theme.align}} {{theme.justify}} {{theme.border}}">
+            <div class="{theme.headingNormal}">{{order.Supplier.Name}}</div>
+        </div>
+        <div class="col col-md-1"></div>
+        <div class="col col-md-2 {{theme.align}} {{theme.justify}} {{theme.border}}">
+            <div class="{{theme.headingBold}}">PO Number:</div>
+        </div>
+        <div class="col col-md-2 {{theme.align}} {{theme.justify}} {{theme.border}}">
+            <div class="{{theme.headingNormal}}">{{order.id}}</div>
+        </div>
+    </div>
+
+    <div id="invtable">
+        <div class="row mt-3 {{theme.justify}} {{theme.textJustify}} {{theme.border}}">
+            <div class="col col-md-3">
+                <div class="{{theme.headingBold}}">Inventory</div>
+            </div>
+            <div class="col col-md-2">
+                <div class="{{theme.headingBold}}">Variant</div>
+            </div>
+            <div class="col col-md-2">
+                <div class="{{theme.headingBold}}">Unit</div>
+            </div>
+            <div class="col col-md-1">
+                <div class="{{theme.headingBold}}">Quantity</div>
+            </div>
+            <div class="col col-md-2">
+                <div class="{{theme.headingBold}}">Price</div>
+            </div>
+            <div class="col col-md-1">
+                <div class="{{theme.headingBold}}">Amount</div>
+            </div>
+        </div>
+        {% for data in inv %}
+            <div class="row mt-0 {{theme.justify}} {{theme.textJustify}} {{theme.border}}">
+                <div class="col col-md-3">
+                    <div style="{{theme.content}}">{{data.Name}}</div>
+                </div>
+                <div class="col col-md-2">
+                    <div style="{{theme.content}}">{{data.Variant}}</div>
+                </div>
+                <div class="col col-md-2">
+                    <div style="{{theme.content}}">{{data.Unit}}</div>
+                </div>
+                <div class="col col-md-1">
+                    <div style="{{theme.content}}">{{data.Quantity}}</div>
+                </div>
+                <div class="col col-md-2">
+                    <div style="{{theme.content}}">{{data.Currency}} {{data.Price}}</div>
+                </div>
+                <div class="col col-md-1">
+                    <div style="{{theme.content}}">{{data.Value}}</div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <div class="fixed-bottom" style="bottom: 50px;">
+        <div class="row mt-3">
+            <div class="col col-sm-8 border border-dark">
+                <div class="row {{theme.justify}} {{theme.align}} {{theme.textJustify}}">
+                    <div class="col {{theme.align}}">
+                        <div class="{{theme.headingBold}}">Terms & Conditions:</div>
+                    </div>
+                </div>
+                <div class="row {{theme.justify}} {{theme.align}} {{theme.textJustify}}">
+                    <div class="col {{theme.align}}">
+                        <div style="{{theme.content}}">
+                            1. A signed copy of this PO is required to be sent along with goods being dispatched.
+                        </div>
+                    </div>
+                </div>
+                <div class="row {{theme.justify}} {{theme.align}} {{theme.textJustify}}">
+                    <div class="col {{theme.align}}">
+                        <div style="{{theme.content}}">
+                            2. Goods must be as per standard and approved quality.
+                        </div>
+                    </div>
+                </div>
+                <div class="row {{theme.justify}} {{theme.align}} {{theme.textJustify}}">
+                    <div class="col {{theme.align}}">
+                        <div style="{{theme.content}}">
+                            3. Goods must be dispatched within office working hours. No goods will be accepted after working hours.
+                        </div>
+                    </div>
+                </div>
+                <div class="row {{theme.justify}} {{theme.align}} {{theme.textJustify}}">
+                    <div class="col {{theme.align}}">
+                        <div style="{{theme.content}}">
+                            4. In case of delay from agreed upon delivery date, we reserve the right to refuse or discount the goods.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col col-sm-4 {{theme.border}}">
+                <div class="row {{theme.justify}} {{theme.align}} {{theme.textJustify}}">
+                    <div class="col {{theme.align}}">
+                        <div class="{{theme.headingBold}}">Order Summary:</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col col-md-6 {{theme.align}} {{theme.justify}}"> 
+                        <div style="{{theme.content}}" class="fw-bold">Net Amount:</div>
+                    </div>
+                    <div class="col col-md-6 {{theme.align}} {{theme.justify}}"> 
+                        <div style="{{theme.content}}">{{summary.Currency}} {{summary.beforeTaxAmount}}</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col col-md-6 {{theme.align}} {{theme.justify}}"> 
+                        <div style="{{theme.content}}" class="fw-bold">Tax Amount:</div>
+                    </div>
+                    <div class="col col-md-6 {{theme.align}} {{theme.justify}}"> 
+                        <div style="{{theme.content}}">{{summary.Currency}} {{summary.tax}}</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col col-md-6 {{theme.align}} {{theme.justify}}"> 
+                        <div style="{{theme.content}}" class="fw-bold">Grand Total:</div>
+                    </div>
+                    <div class="col col-md-6 {{theme.align}} {{theme.justify}}"> 
+                        <div style="{{theme.content}}">{{summary.Currency}} {{summary.afterTaxAmount}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block footer %}
+<div class="fixed-bottom" style="bottom: 5px">
+    <div class="row mt-3 {{theme.justify}} {{theme.textJustify}} border-top border-dark ">  
+        <div style="{{theme.content}}">
+            This is a system generated document and does not require signature.
+        </div>
+    </div>  
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'productivity/base.html' %}
+
+{% block title %}
+    Production Operations
+{% endblock title %}
+
+{% block content %}
+    <div class="{{theme.border}}">
+        <p>
+            <form action="{% url 'operations' %}" method="get">
+                <div class="row g-3 {{theme.justify}} {{theme.align}}">
+                    <div class="col {{theme.textJustify}}">
+                        <select id="sectionFilter" name="sectionFilter" onchange="this.form.submit()" class="{{theme.dropdown}}">
+                            <option value="">  ---------  </option>
+                        </select>
+                    </div>
+                    <div class="col {{theme.textJustify}}">
+                        <input type="text" class="{{theme.textInput}} w-100" name="searchTerm" placeholder="Search" value="{{searchTerm}}">
+                    </div>
+                    <div class="col {{theme.textJustify}}">
+                        <label for="rangeSlider">Rate Per SAM (Min: {{minRatePerSAM|floatformat:2}}, Max: {{maxRatePerSAM|floatformat:2}})</label>
+                        <input type="range" class="form-range" id="minSlider" min="{{minRatePerSAM}}" max="{{maxRatePerSAM}}" step="0.01" value="{{ratePerSAM}}" name="ratePerSAM">
+                    </div> 
+                    <div class="col-2 btn-group {{theme.textJustify}}">
+                        <button type="submit" class="{{theme.buttonBasic}}">Search</button>
+                    </div>
+                </div>
+            </form>
+        </p>
+    </div>
+
+    <div id ="operations">
+        <table class="{{theme.table}}">
+            <tr class = "{{theme.tableHead}}">
+                <th scope="col">Select</th>
+                <th scope="col">Code</th>
+                <th scope="col">Name</th>
+                <th scope="col">Section</th>
+                <th scope="col">SAM</th>
+                <th scope="col">Rate</th>
+                <th scope="col">Rate/SAM</th>
+            </tr>
+            <tbody id="tableData" class = "{{theme.tableBody}}">
+                {% for data in operations %}
+                    <tr>
+                        <td><input type="radio" name="item_checkbox"></td>
+                        <td class="id">{{ data.id }}</td>
+                        <td>{{ data.Name }}</td>
+                        <td>{{ data.Section }}</td>
+                        <td>{{ data.SMV }}</td>
+                        <td>{{ data.Rate }}</td>
+                        <td>{{ data.RatePerSAM }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock content %}

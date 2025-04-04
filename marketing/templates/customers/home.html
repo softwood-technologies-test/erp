@@ -1,0 +1,148 @@
+{% extends 'marketing/base.html' %}
+
+{% block title %}
+    Customers
+{% endblock title %}
+
+{% block content %}
+    <div class="{{theme.border}}">
+        <div class="grid grid-cols-2 {{theme.justify}} {{theme.align}}">
+            <form action="{% url 'customerData' %}" method="get">
+                <div class="grid grid-cols-4 {{theme.justify}} {{theme.align}}">
+                    <div>
+                        <input class="{{theme.textInput}}" name="search" value="{{search}}" placeholder="Search">
+                    </div>
+                    <div>
+                        <select name="assignFilter" onchange="this.form.submit()" class="{{theme.dropdown}}">
+                            <option value="Active" 
+                            {% if assignFilter == 'Active' %}
+                                selected
+                            {% endif %}
+                                >  Active  </option>
+                            <option value="Open"
+                            {% if assignFilter == 'Open' %}
+                                selected
+                            {% endif %}
+                                >  Open  </option>
+                        </select>
+                    </div>
+                    <div>
+                        <select name="countryFilter" id="countryFilter" onchange="this.form.submit()" class="{{theme.dropdown}}">
+                            {% for country in countries %}
+                                <option value="{{country.value}}"
+                                    {% if countryFilter == country.value %}
+                                        selected
+                                    {% endif %}    
+                                    > {{country.text}} 
+                                </option>
+                            {% endfor %}    
+                        </select>
+                    </div>
+                    <div>
+                        <button type="submit" class="flex-1 {{theme.buttonBasic}}">Search</button>
+                    </div>                
+                </div>
+            </form>
+            <div class="grid grid-cols-3 {{theme.justify}} {{theme.align}}">
+                <a class="flex-1 {{theme.buttonBasicStart}}" href="/marketing/customer/add" role="button">Add</a>
+                <a id="editCustomerButton" class="flex-1 {{theme.buttonBasicMid}}" role="button">Edit</a>
+                <a id="toggleCustomerButton" class="flex-1 {{theme.buttonBasicEnd}}" role="button"">Toggle Assign</a>
+            </div>
+        </div>   
+    </div>
+
+    <div id ="customerTable" class="mt-6">
+        <table class="{{theme.table}}">
+            <tr class = "{{theme.tableHead}}">
+                <th scope="col">Select</th>
+                <th scope="col">Name</th>
+                <th scope="col">Country</th>
+                <th scope="col">Contact Person</th>
+                <th scope="col">Contact Details</th>
+                <th scope="col">Address</th>
+            </tr>
+            <tbody id="tableData" class = "{{theme.tableBody}}">
+                {% for data in customers %}
+                    <tr class="hover:bg-gray-300">
+                        <td><input type="radio" name="item_checkbox" class="{{theme.checkbox}}"></td>
+                        <td class="id" hidden>{{ data.id }}</td>
+                        <td class="{{theme.hyperLink}}">
+                            {% if data.Website %}
+                                <a href="{{ data.Website }}" target="_blank" class="underline text-blue-600 hover:text-blue-800">{{ data.Name }}</a>
+                            {% else %}
+                                {{ data.Name }}
+                            {% endif %}
+                        </td>
+                        <td>{{ data.Country }}</td>
+                        <td>{{ data.ContactPerson }}</td>
+                        <td>{{ data.ContactDetails }}</td>
+                        <td>{{ data.Address }}</td>
+                    </tr>
+                {% endfor%}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="{{theme.pagination}}">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&assignFilter={{ assignFilter }}&search={{search}}&countryFilter={{countryFilter}}"
+            class = "{{theme.linkPaginaton}}">
+                Previous
+            </a>
+        {% else %}
+            <a>
+                Previous
+            </a>
+        {% endif %} &nbsp|&nbsp
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&assignFilter={{ assignFilter }}&search={{search}}&countryFilter={{countryFilter}}"
+            class = "{{theme.linkPaginaton}}">
+                Next
+            </a>
+        {% else %}
+            <a>
+                Next
+            </a>
+        {% endif %} &nbsp|&nbsp
+        {% if page_obj.has_previous %}
+            <a href="?page=1&assignFilter={{ assignFilter }}&search={{search}}&countryFilter={{countryFilter}}"
+            class = "{{theme.linkPaginaton}}">
+                First
+            </a>
+        {% else %}
+            <a>
+                First
+            </a>
+        {% endif %} &nbsp|&nbsp
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.paginator.num_pages }}&assignFilter={{ assignFilter }}&search={{search}}&countryFilter={{countryFilter}}"
+            class = "{{theme.linkPaginaton}}">
+                Last
+            </a>
+        {% else %}
+            <a>
+                Last
+            </a>
+        {% endif %} &nbsp|&nbsp
+    </div>
+
+    <script>    //To change the buttons based on selected customer
+        $("#tableData").on("click", "input[type='radio']", function() {
+            const selectedCustomer = $(this).closest("tr").find("td.id").text();
+
+            let button = $("#editCustomerButton");  
+            button.attr("href", "/marketing/customer/" + selectedCustomer + "/edit");
+
+            button = $("#toggleCustomerButton");
+            button.attr("href", "/marketing/customer/" + selectedCustomer + "/toggle");
+
+            button = $("#suggestEmailButton");
+            button.attr("customer", selectedCustomer);
+        });
+    </script>
+    
+    <script>    //To run at the start. Must be at the end of the html body
+        new TomSelect('#countryFilter',{});
+    </script>
+{% endblock content %}
+    
