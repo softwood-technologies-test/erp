@@ -18,6 +18,8 @@
       <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
       <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 
+      <link href="https://cdn.jsdelivr.net/npm/daisyui@latest/dist/full.css" rel="stylesheet" type="text/css" />
+
       <link rel="stylesheet" href="{% static 'style.css' %}">
       
       <link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/css/tom-select.css" rel="stylesheet">
@@ -55,41 +57,37 @@
     <!--Navigation Bar-->
 
     <div class="{{theme.navigationBar}}">
-      <div class="container mx-auto flex justify-between items-center">
-        <ul class="flex space-x-4">
-          <li>
-            <a href="{% url 'marketing' %}" class="hover:text-gray-300">Dashboard</a>
-          </li>
-          <li class="relative group">
-            <a class="hover:text-gray-300 cursor-pointer">Customers</a>
-            <ul class="absolute hidden group-hover:block group-focus-within:block bg-gray-700 rounded-md shadow-md py-2 w-40">
-              <li><a href="{% url 'customerData' %}" class="block px-4 py-2 hover:bg-gray-600">Database</a></li>
+      <div class="navbar-start">
+        <ul class="menu menu-horizontal px-1">
+          <li><a href="{% url 'marketing' %}">Dashboard</a></li>
+          <li class="dropdown dropdown-hover">
+            <label tabindex="0" class="cursor-pointer">Customers</label>
+            <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+              <li><a href="{% url 'customerData' %}">Database</a></li>
             </ul>
           </li>
-          <li class="relative group">
-            <a class="hover:text-gray-300 cursor-pointer">Calls</a>
+          <li class="dropdown dropdown-hover">
+            <label tabindex="0" class="cursor-pointer">Calls</label>
+            <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+            </ul>
           </li>
-          <li class="relative group">
-            <a class="hover:text-gray-300 cursor-pointer">Inquiries</a>
+          <li class="dropdown dropdown-hover">
+            <label tabindex="0" class="cursor-pointer">Inquiries</label>
+            <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+            </ul>
           </li>
-          <li class="relative group">
-            <a class="hover:text-gray-300 cursor-pointer">Insights</a>
+          <li class="dropdown dropdown-hover">
+            <label tabindex="0" class="cursor-pointer">Insights</label>
+            <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+            </ul>
           </li>
         </ul>
-        <ul class="flex space-x-4 items-center">
-          {% if user.is_authenticated %}
-            <span class="text-gray-300">Logged in as {{user.first_name}} |</span>
-            <li>
-              <a href="/logout" class="hover:text-gray-300">Logout</a>
-          </li>
-          {% else %}
-            <li>
-              <a href="/login" class="hover:text-gray-300">Login</a>
-            </li>
-          {% endif %}
-          <li>
-            <a href="/" class="hover:text-gray-300">Go to Main</a>
-          </li>
+      </div>
+      <div class="navbar-end">
+        <ul class="menu menu-horizontal px-1 items-center">
+          <li><span>Logged in as Firasat |</span></li>
+          <li><a href="/logout">Logout</a></li>
+          <li><a href="/">Go to Main</a></li>
         </ul>
       </div>
     </div>
