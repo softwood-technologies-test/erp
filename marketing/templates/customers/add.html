@@ -9,64 +9,64 @@
     <form method="POST" id="customerForm" autocomplete="off">  
         <div class="{{theme.border}}">
             <div class="grid grid-cols-2 {{theme.justify}} {{theme.align}}">
-                <div class="flex w-full mt-4px-3 px-3 {{theme.align}}">
+                <div class="flex w-full mt-2 px-3 {{theme.align}}">
                     <label class="mr-2 whitespace-nowrap">Name:&nbsp; </label>
                     <input type="text" class="flex-grow {{theme.textInput}}" name="Name" required>
                 </div>
-                <div class="flex w-full mt-4 px-3 {{theme.align}}">
+                <div class="flex w-full mt-2 px-3 {{theme.align}}">
                     <label class="mr-2 whitespace-nowrap">Country:&nbsp; </label>
                     <select id="id_Country" class="{{theme.dropdown}}" name="Country" required> </select>
                 </div>
-                <div class="flex w-full mt-4 px-3 {{theme.align}}">
+                <div class="flex w-full mt-2 px-3 {{theme.align}}">
                     <label class="mr-2 whitespace-nowrap">Website:&nbsp; </label>
                     <input type="url" class="flex-grow {{theme.textInput}}" name="Website">
                 </div>
-                <div class="flex w-full mt-4 px-3 {{theme.align}}">
+                <div class="flex w-full mt-2 px-3 {{theme.align}}">
                     <label class="mr-2 whitespace-nowrap">Address:&nbsp; </label>
                     <input type="text" class="flex-grow {{theme.textInput}}" name="Address">
                 </div>
             </div>
     </form>
     <form method="POST" id="customerDetailForm" autocomplete="random-string">
-            <div class="grid grid-cols-10 mt-4 px-3 {{theme.justify}} {{theme.align}} {{theme.border}} {{theme.tableHead}}" row="0">
+            <div class="grid grid-cols-10 mt-4 px-3 {{theme.border}} {{theme.tableHead}}" row="0">
                 <div class="flex col-[1/3] {{theme.align}} {{theme.justify}}">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                    <div class="{{theme.primaryHeading}} {{theme.textJustify}}">
                         Contact Person
                     </div>
                 </div>
                 <div class="flex col-[3/4] {{theme.align}} {{theme.justify}}">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                    <div class="{{theme.primaryHeading}} {{theme.textJustify}}">
                         Designation
                     </div>
                 </div>
                 <div class="flex col-[4/6] {{theme.align}} {{theme.justify}}">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                    <div class="{{theme.primaryHeading}} {{theme.textJustify}}">
                         Phone Number
                     </div>
                 </div>
                 <div class="flex col-[6/10] {{theme.align}} {{theme.justify}}">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                    <div class="{{theme.primaryHeading}} {{theme.textJustify}}">
                         Email
                     </div>
                 </div>
                 <div class="flex col-[10/10] {{theme.align}} {{theme.justify}}">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
+                    <div class="{{theme.primaryHeading}} {{theme.textJustify}}">
                         Actions
                     </div>
                 </div>
             </div>
             <div class="grid grid-cols-10 x-3 {{theme.justify}} {{theme.align}} {{theme.border}}" row="1">
                 <div class="flex col-[1/3] {{theme.align}} {{theme.justify}}">
-                    <input type="text" class="flex-grow {{theme.textInput}}" name="ContactPersonName">
+                    <input type="text" class="flex-grow {{theme.textInput}}" name="Name">
                 </div>
                 <div class="flex col-[3/4] {{theme.align}} {{theme.justify}}">
-                    <input type="text" class="flex-grow {{theme.textInput}}" name="ContactPersonDesignation">
+                    <input type="text" class="flex-grow {{theme.textInput}}" name="Designation">
                 </div>
                 <div class="flex col-[4/6] {{theme.align}} {{theme.justify}}">
-                    <input type="text" class="flex-grow {{theme.textInput}}" name="ContactPersonNumber">
+                    <input type="text" class="flex-grow {{theme.textInput}}" name="PhoneNumber">
                 </div>
                 <div class="flex col-[6/10] {{theme.align}} {{theme.justify}}">
-                    <input type="email" class="flex-grow {{theme.textInput}}" name="ContactPersonEmail">
+                    <input type="email" class="flex-grow {{theme.textInput}}" name="Email">
                 </div>
                 <div class="flex col-[10/10] space-x-1 {{theme.align}} {{theme.justify}}">
                     <button class="{{theme.plusButton}}" type="button" onclick="addRow(this)">

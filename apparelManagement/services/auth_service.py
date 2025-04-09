@@ -28,6 +28,9 @@ def hasPermission (
     user = request.user    
     groups = user.groups.all()
 
+    if user.is_staff:
+        return True
+
     if not groups:
         return False
     

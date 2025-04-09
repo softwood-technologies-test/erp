@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpRequest, HttpResponse
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 
 import json
 
@@ -78,7 +79,7 @@ def EditCustomer(request: HttpRequest, pk: int):
 
         try:
             customer_service.EditCustomer(customer, dfCustomer, dfCustomerDetails)
-            return HttpResponse('In Process', status=401)
+            return HttpResponse('OK')
         except Exception as e:
             print(e)
             return HttpResponse(e, status=400)
@@ -91,3 +92,24 @@ def EditCustomer(request: HttpRequest, pk: int):
         }
         
         return render(request, 'customers/edit.html', context)
+
+@login_required(login_url='/login')
+def ToggleAssignment(request: HttpRequest, pk: int):
+    if request.method != 'GET':
+        return HttpResponse('Not Allowed', status=403)
+
+    try:
+        customer = models.Customer.objects.get(id=pk)
+    except:
+        return HttpResponse('Customer not found', status=404)
+    
+    if not customer.AccountManager:
+        customer.AccountManager = request.user
+    elif customer.AccountManager == request.user:
+        customer.AccountManager = None
+    else:
+        return HttpResponse('Access Denied', status=403)
+
+    customer.save()
+
+    return redirect(reverse('customerData'))

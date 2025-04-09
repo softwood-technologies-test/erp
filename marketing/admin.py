@@ -25,10 +25,3 @@ class CustomerContactAdmin(admin.ModelAdmin):
 
     list_display = ('Customer','Name')
     list_filter = ('Customer',)
-
-@admin.register(models.CustomerContactDetails)
-class CustomerContactDetailsAdmin(admin.ModelAdmin):
-    '''Admin View for CustomerContact Details'''
-
-    list_display = ('Customer','CustomerContact','PhoneNumber')
-    list_filter = ('Customer',)

@@ -37,7 +37,7 @@
                         {% endfor %}    
                     </select>
                 </div>
-                <div class="flex col-[7/10] btn-group{{theme.align}} {{theme.justify}}">
+                <div class="flex col-[7/11] btn-group {{theme.align}} justify-end">
                     <button type="submit" class="{{theme.buttonBasic}}">Search</button>
                     <a class="{{theme.buttonBasic}}" href="/marketing/customer/add" role="button">Add</a>
                     <a id="editCustomerButton" class="{{theme.buttonBasic}}" role="button">Edit</a>
@@ -53,13 +53,12 @@
                 <th scope="col">Select</th>
                 <th scope="col">Name</th>
                 <th scope="col">Country</th>
-                <th scope="col">Contact Person</th>
                 <th scope="col">Contact Details</th>
                 <th scope="col">Address</th>
             </tr>
             <tbody id="tableData" class = "{{theme.tableBody}}">
                 {% for data in customers %}
-                    <tr class="hover:bg-gray-300">
+                    <tr class="{{theme.tableBodyRow}}">
                         <td><input type="radio" name="item_checkbox" class="{{theme.radio}}"></td>
                         <td class="id" hidden>{{ data.id }}</td>
                         <td class="{{theme.hyperLink}}">
@@ -70,8 +69,13 @@
                             {% endif %}
                         </td>
                         <td>{{ data.Country }}</td>
-                        <td>{{ data.ContactPerson }}</td>
-                        <td>{{ data.ContactDetails }}</td>
+                        <td>
+                            {% if data.ContactDetails %}
+                                {% for contact in data.ContactDetails %}
+                                    {{ contact }}<br>
+                                {% endfor %}
+                            {% endif %}
+                        </td>
                         <td>{{ data.Address }}</td>
                     </tr>
                 {% endfor%}
@@ -79,55 +83,34 @@
         </table>
     </div>
     
-    <div class="{{theme.pagination}}">
-        {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}&assignFilter={{ assignFilter }}&search={{search}}&countryFilter={{countryFilter}}"
-            class = "{{theme.linkPaginaton}}">
-                Previous
-            </a>
-        {% else %}
-            <a class = "{{theme.linkPaginaton}}">
-                Previous
-            </a>
-        {% endif %} &nbsp|&nbsp
-        {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}&assignFilter={{ assignFilter }}&search={{search}}&countryFilter={{countryFilter}}"
-            class = "{{theme.linkPaginaton}}">
-                Next
-            </a>
-        {% else %}
-            <a class = "{{theme.linkPaginaton}}">
-                Next
-            </a>
-        {% endif %} &nbsp|&nbsp
-        {% if page_obj.has_previous %}
-            <a href="?page=1&assignFilter={{ assignFilter }}&search={{search}}&countryFilter={{countryFilter}}"
-            class = "{{theme.linkPaginaton}}">
-                First
-            </a>
-        {% else %}
-            <a class = "{{theme.linkPaginaton}}">
-                First
-            </a>
-        {% endif %} &nbsp|&nbsp
-        {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.paginator.num_pages }}&assignFilter={{ assignFilter }}&search={{search}}&countryFilter={{countryFilter}}"
-            class = "{{theme.linkPaginaton}}">
-                Last
-            </a>
-        {% else %}
-            <a class = "{{theme.linkPaginaton}}">
-                Last
-            </a>
-        {% endif %} &nbsp|&nbsp
+    <div class="{{ theme.pagination }}">
+        <div class="btn-group">
+            {% if page_obj.has_previous %}
+                <a href="?page=1&assignFilter={{ assignFilter }}&search={{ search }}&countryFilter={{ countryFilter }}" class="btn btn-sm">First</a>
+                <a href="?page={{ page_obj.previous_page_number }}&assignFilter={{ assignFilter }}&search={{ search }}&countryFilter={{ countryFilter }}" class="btn btn-sm">Previous</a>
+            {% else %}
+                <button class="btn btn-sm" disabled>First</button>
+                <button class="btn btn-sm" disabled>Previous</button>
+            {% endif %}
+    
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&assignFilter={{ assignFilter }}&search={{ search }}&countryFilter={{ countryFilter }}" class="btn btn-sm">Next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}&assignFilter={{ assignFilter }}&search={{ search }}&countryFilter={{ countryFilter }}" class="btn btn-sm">Last</a>
+            {% else %}
+                <button class="btn btn-sm" disabled>Next</button>
+                <button class="btn btn-sm" disabled>Last</button>
+            {% endif %}
+        </div>
     </div>
 
     <script>    //To change the buttons based on selected customer
         $("#tableData").on("click", "input[type='radio']", function() {
             const selectedCustomer = $(this).closest("tr").find("td.id").text();
 
+            const filters = new URLSearchParams(window.location.search);
+
             let button = $("#editCustomerButton");  
-            button.attr("href", "/marketing/customer/" + selectedCustomer + "/edit");
+            button.attr("href", `/marketing/customer/` + selectedCustomer + `/edit?${filters.toString()}`);
 
             button = $("#toggleCustomerButton");
             button.attr("href", "/marketing/customer/" + selectedCustomer + "/toggle");

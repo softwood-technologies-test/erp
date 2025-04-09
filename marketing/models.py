@@ -24,23 +24,11 @@ class CustomerContact(models.Model):
     Name = models.CharField(max_length=255)
     Designation = models.CharField(max_length=50)
     IsActive = models.BooleanField(default=True)
-
-    class Meta:
-        """Meta definition for Contact persons in customer."""
-
-        indexes = [
-            models.Index(fields=['Customer',]),
-        ]
-
-class CustomerContactDetails(models.Model):
-    id = models.AutoField(primary_key=True)
-    Customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    CustomerContact = models.ForeignKey(CustomerContact, on_delete=models.CASCADE, blank=True, null=True)
     PhoneNumber = models.CharField(max_length=50, blank=True, null=True)
     Email = models.EmailField(blank=True, null=True)
 
     class Meta:
-        """Meta definition for contact details of customers."""
+        """Meta definition for Contact persons in customer."""
 
         indexes = [
             models.Index(fields=['Customer',]),

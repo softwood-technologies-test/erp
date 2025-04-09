@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 from django.http import HttpRequest
 from django_countries import countries
@@ -6,7 +7,18 @@ from django_countries import countries
 from .. import models
 from .generic_services import askAI, dfToListOfDicts, updateModelWithDF
 
-def GetCustomers(request: HttpRequest, assignFilter: str, countryFilter: str):
+def getCountryName(code: str):
+    """Get the country name from it's country code. If code isn't found, then None is returned."""
+    try:
+        return countries.name(code)
+    except KeyError:
+        return None   
+
+def GetCustomers(
+        request: HttpRequest,
+        assignFilter: str,
+        countryFilter: str
+):
     if assignFilter == 'Active':
         customers = models.Customer.objects.filter(AccountManager=request.user)
     else:
@@ -15,16 +27,55 @@ def GetCustomers(request: HttpRequest, assignFilter: str, countryFilter: str):
     if countryFilter:
         customers = customers.filter(Country=countryFilter)
 
-    fields = ['id','Name','Country','Website','Address','AccountManager']
+    fields = ['id','Name','Country','Website','Address']
     customers = customers.values(*fields)
     if customers:
         dfCustomers = pd.DataFrame(customers)
     else:
         dfCustomers = pd.DataFrame(columns=fields)
-    del fields, customers
+    del customers
 
-    dfCustomers = dfCustomers.sample(frac=1)
+    fields = ['Customer', 'Name', 'Designation', 'IsActive', 'PhoneNumber', 'Email']
+    customerContacts = models.CustomerContact.objects.filter(Customer__in=dfCustomers['id'].to_list()).values(*fields)
+    if customerContacts:
+        dfCustomerContacts = pd.DataFrame(customerContacts)
+    else:
+        dfCustomerContacts = pd.DataFrame(columns=fields)
+    del fields, customerContacts
+
+    dfCustomers['Country'] = dfCustomers['Country'].apply(getCountryName)
     dfCustomers = dfCustomers.sort_values(by='Country').reset_index(drop=True)
+
+    # Combine Name and Designation to ContactDetails
+    dfCustomerContacts['ContactDetails'] = dfCustomerContacts['Name'] + np.where(dfCustomerContacts['Designation'].str.len() > 0,
+                                                                                  ' (' + dfCustomerContacts['Designation'] + ')',
+                                                                                  '')
+
+    # Add phone number
+    dfCustomerContacts['ContactDetails'] = dfCustomerContacts['ContactDetails'] + np.where(dfCustomerContacts['PhoneNumber'].str.len() > 0,
+                                                                                             ' (Ph: ' + dfCustomerContacts['PhoneNumber'] + ')',
+                                                                                             '')
+
+    # Add email
+    dfCustomerContacts['ContactDetails'] = dfCustomerContacts['ContactDetails'] + np.where(dfCustomerContacts['Email'].str.len() > 0,
+                                                                                             ' (Email: ' + dfCustomerContacts['Email'] + ')',
+                                                                                             '')
+
+    # Add InActive status
+    dfCustomerContacts['ContactDetails'] = np.where(dfCustomerContacts['IsActive'] == False,
+                                                                 dfCustomerContacts['ContactDetails'] + ' (InActive)',
+                                                                 dfCustomerContacts['ContactDetails'])
+
+    # Drop the original columns to improve performance
+    dfCustomerContacts.drop(inplace=True, columns=['Name', 'Designation', 'PhoneNumber', 'Email', 'IsActive'])
+    dfCustomerContacts = dfCustomerContacts.groupby('Customer')['ContactDetails'].apply(list).reset_index()
+
+    dfCustomerContacts.rename(inplace=True, columns={'Customer':'id'})
+
+    dfCustomers = pd.merge(left=dfCustomers, right=dfCustomerContacts, left_on='id', right_on='id', how='left')
+    del dfCustomerContacts
+
+    dfCustomers['ContactDetails'] = np.where(dfCustomers['ContactDetails'].isna(), '', dfCustomers['ContactDetails'])
 
     data = dfToListOfDicts(dfCustomers)
 
@@ -67,31 +118,12 @@ def AddCustomer(dfCustomer: pd.DataFrame, dfCustomerDetails: pd.DataFrame):
     customer.save()
     
     for _, row in dfCustomerDetails.iterrows():
-        if len(row['ContactPersonName']) > 0:
-            customerContact = models.CustomerContact(
-                Customer = customer,
-                Name = row['ContactPersonName'],
-                Designation = row['ContactPersonDesignation'],
-                IsActive = True
-            )
-            customerContact.save()
-
-            if (len(row['ContactPersonNumber']) > 0) or (len(row['ContactPersonEmail']) > 0):
-                customerContactDetails = models.CustomerContactDetails(
-                    Customer = customer,
-                    CustomerContact = customerContact,
-                    PhoneNumber = row['ContactPersonNumber'],
-                    Email = row['ContactPersonEmail']
-                )
-                customerContactDetails.save()
-        else:
-            customerContactDetails = models.CustomerContactDetails(
-                Customer = customer,
-                CustomerContact = None,
-                PhoneNumber = row['ContactPersonNumber'],
-                Email = row['ContactPersonEmail']
-            )
-            customerContactDetails.save()
+        customerContact = models.CustomerContact(**row.to_dict())
+        customerContact.Customer = customer
+        customerContact.IsActive = True
+        
+        customerContact.save()
+    
     return customer.id
 
 def GetDataForCustomer (customer: models.Customer):
@@ -103,30 +135,21 @@ def GetDataForCustomer (customer: models.Customer):
         'AccountManager': customer.AccountManager.username if customer.AccountManager else None,
     }
 
-    fields = ['id','Name','Designation','IsActive']
+    fields = ['id','Name','Designation','IsActive', 'PhoneNumber','Email']
     customerContacts = models.CustomerContact.objects.filter(Customer=customer).values(*fields)
     if customerContacts:
         dfCustomerContacts = pd.DataFrame(customerContacts)
     else:
         dfCustomerContacts = pd.DataFrame(columns=fields)
     del fields, customerContacts
-    
-    fields = ['id','CustomerContact','PhoneNumber','Email']
-    customerContactDetails = models.CustomerContactDetails.objects.filter(Customer=customer).values(*fields)
-    if customerContactDetails:
-        dfCustomerContactDetails = pd.DataFrame(customerContactDetails)
-    else:
-        dfCustomerContactDetails = pd.DataFrame(columns=fields)
-    del fields, customerContactDetails
-
-    dfCustomerContacts = pd.merge(left=dfCustomerContacts, right=dfCustomerContactDetails, left_on='id', right_on='CustomerContact', how='outer')
-    del dfCustomerContactDetails
-    dfCustomerContacts.drop(inplace=True, columns=['CustomerContact'])
-    dfCustomerContacts.rename(inplace=True, columns={'id_x': 'ContactsId', 'id_y': 'ContactDetailsId'})
 
     return customerData, dfToListOfDicts(dfCustomerContacts)
 
-def EditCustomer(customer: models.Customer, dfCustomer: pd.DataFrame, dfCustomerDetails: pd.DataFrame):
+def EditCustomer(
+        customer: models.Customer,
+        dfCustomer: pd.DataFrame,
+        dfCustomerDetails: pd.DataFrame
+):
     customerData = dfToListOfDicts(dfCustomer)[0]
     del dfCustomer
     if len(customerData['Name']) < 1:
@@ -139,27 +162,18 @@ def EditCustomer(customer: models.Customer, dfCustomer: pd.DataFrame, dfCustomer
     for field, value in customerData.items():
         setattr(customer, field, value)
     del customerData
-    #customer.save()
+    customer.save()
 
     fields = ['id']
     previousContact = models.CustomerContact.objects.filter(Customer=customer).values(*fields)
     if previousContact:
-        dfPreiviousContacts = pd.DataFrame(previousContact)
+        dfPreviousContacts = pd.DataFrame(previousContact)
     else:
-        dfPreiviousContacts = pd.DataFrame(columns=fields)
+        dfPreviousContacts = pd.DataFrame(columns=fields)
     del fields, previousContact
 
-    fields = ['id', 'Customer']
-    previousContactDetails = models.CustomerContactDetails.objects.filter(Customer=customer).values(*fields)
-    if previousContactDetails:
-        dfPreviousContactDetails = pd.DataFrame(previousContactDetails)
-    else:
-        dfPreviousContactDetails = pd.DataFrame(columns=fields)
-    del fields, previousContactDetails
+    dfCustomerDetails['Customer'] = customer
 
-    dfContactPersons = dfCustomerDetails[['ContactsId','ContactPersonName','ContactPersonDesignation','IsActive']]
-    dfContactDetails = dfCustomerDetails[['ContactsId','ContactDetailsId','ContactPersonNumber','ContactPersonEmail']]
-    del dfCustomerDetails
+    dfCustomerDetails['id'] = np.where(dfCustomerDetails['id'].str.len()==0, None, dfCustomerDetails['id'])
 
-    for _, row in dfContactDetails.iterrows():
-        print(row)
+    updateModelWithDF(models.CustomerContact, dfCustomerDetails, dfPreviousContacts) 

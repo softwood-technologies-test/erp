@@ -7,24 +7,25 @@ theme = {
     'justify': 'justify-center',
     'align': 'items-center',
     'textJustify': 'text-center',
-    'primaryHeading': 'text-xl',
+    'primaryHeading': 'text-2xl font-bold',
     'secondaryHeading': 'text-base',
     
     #Table Theme
-    'table': 'table table-zebra w-full text-center align-middle text-lg font-light',
-    'tableHead': 'bg-base-200 dark:bg-base-800',
-    'tableBody': '',
-    'tableBodyRow': 'hover: bg-base-300 dark:bg-base-700',
+    'table': 'table table-xs table-zebra',
+    'tableHead': 'bg-base-200 dark:bg-base-800 text-center align-middle',
+    'tableBody': 'text-center align-middle',
+    'tableBodyRow': 'hover:bg-gray-300',
 
     #Pagination
-    'pagination': 'join dark:bg-gray-800 dark:text-white',
+    'pagination': 'flex justify-center mt-4',
     'dropdownPagination': 'text-xs py-1 px-2 border rounded',
     'linkPaginaton': 'join-item btn',
     
     #Buttons
-    'buttonBasic': 'btn btn-primary btn-lg w-fit dark:bg-gray-800 dark:hover:bg-gray-700',
-    'buttonSelected': 'px-6 py-3 text-lg font-semibold text-white bg-gradient-to-r from-gray-800 to-gray-900 opacity-50 rounded-md',
-    'buttonSecondary': 'btn btn-lg w-fit rounded-md text-white bg-gradient-to-r from-green-500 to-green-600',
+    'buttonBasic': """btn btn-primary btn-lg rounded-none w-fit bg-gradient-to-b from-blue-500 to-blue-700 dark:bg-gradient-to-b
+                    dark:from-blue-600 dark:to-blue-800 hover:opacity-80""",
+    'buttonSelected': 'px-6 py-3 text-lg font-semibold text-white bg-gradient-to-r from-gray-800 to-gray-900 opacity-50 hover:opacity-60 rounded-md',
+    'buttonSecondary': 'btn btn-lg w-fit rounded-md text-white bg-gradient-to-b from-green-500 to-green-600 hover:opacity-60',
     'plusButton': 'btn btn-sm btn-outline btn-success dark:btn-success-content dark:border-success-content dark:text-success-content',
     'minusButton': 'btn btn-sm btn-outline btn-danger dark:btn-danger-content dark:border-danger-content dark:text-danger-content',
     
@@ -34,7 +35,6 @@ theme = {
     #Text Input
     'textInput': 'input input-bordered w-full text-center dark:bg-gray-800 dark:border-gray-700 dark:text-white',
 
-    #Checkboxesrounded text-center border border-gray-900
     'checkbox': 'checkbox',
     'radio': 'radio',
     'range': 'range',
