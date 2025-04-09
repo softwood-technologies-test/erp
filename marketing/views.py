@@ -113,3 +113,7 @@ def ToggleAssignment(request: HttpRequest, pk: int):
     customer.save()
 
     return redirect(reverse('customerData'))
+
+@login_required(login_url='/login')
+def Calls(request: HttpResponse):
+    return HttpResponse('In Progress')

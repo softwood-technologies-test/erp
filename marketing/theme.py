@@ -22,10 +22,10 @@ theme = {
     'linkPaginaton': 'join-item btn',
     
     #Buttons
-    'buttonBasic': """btn btn-primary btn-lg rounded-none w-fit bg-gradient-to-b from-blue-500 to-blue-700 dark:bg-gradient-to-b
+    'buttonBasic': """btn btn-primary text-lg rounded-none w-fit bg-gradient-to-b from-blue-500 to-blue-700 dark:bg-gradient-to-b
                     dark:from-blue-600 dark:to-blue-800 hover:opacity-80""",
     'buttonSelected': 'px-6 py-3 text-lg font-semibold text-white bg-gradient-to-r from-gray-800 to-gray-900 opacity-50 hover:opacity-60 rounded-md',
-    'buttonSecondary': 'btn btn-lg w-fit rounded-md text-white bg-gradient-to-b from-green-500 to-green-600 hover:opacity-60',
+    'buttonSecondary': 'btn w-fit rounded-md text-lg text-white bg-gradient-to-b from-green-500 to-green-600 hover:opacity-60',
     'plusButton': 'btn btn-sm btn-outline btn-success dark:btn-success-content dark:border-success-content dark:text-success-content',
     'minusButton': 'btn btn-sm btn-outline btn-danger dark:btn-danger-content dark:border-danger-content dark:text-danger-content',
     
