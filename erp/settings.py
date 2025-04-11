@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'apparelManagement',
     'qualityControl',
-    'productivityManagement',
     'marketing',
     'crispy_forms',
     'crispy_bootstrap5',

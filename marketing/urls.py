@@ -10,7 +10,8 @@ urlpatterns = [
     path ('marketing/customer/<int:pk>/edit', views.EditCustomer, name='editCustomer'),
     path ('marketing/customer/<int:pk>/toggle', views.ToggleAssignment, name='toggleAssignment'),
 
-    path ('marketing/corespondence/call', views.Calls, name='callsData'),
+    path ('marketing/corespondence/pending', views.PendingCalls, name='pendingCalls'),
+    path ('marketing/corespondence/calls', views.CallHistory, name='callHistory'),
 
     path('options/countries', options_service.GetCountries, name='countries'),
 ]

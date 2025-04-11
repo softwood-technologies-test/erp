@@ -33,3 +33,17 @@ class CustomerContact(models.Model):
         indexes = [
             models.Index(fields=['Customer',]),
         ]
+
+class Call(models.Model):
+    id = models.AutoField(primary_key=True)
+    Caller = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    Customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    Date = models.DateField(auto_now_add=True)
+    Conversation = models.TextField(default='No answer')
+
+    class Meta:
+        """Meta definition for Calls Record."""
+
+        indexes = [
+            models.Index(fields=['Caller', 'Customer']),
+        ]

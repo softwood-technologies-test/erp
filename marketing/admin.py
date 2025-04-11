@@ -12,16 +12,9 @@ class ImpExp(ImportExportModelAdmin):
     list_display = ('id','Name')
     resource_class = ImpExpResource"""
 
-@admin.register(models.Customer)
-class CustomerAdmin(admin.ModelAdmin):
-    '''Admin View for Customer'''
-    list_display = ('Name','Country','AccountManager')
-    list_filter = ('AccountManager',)
-    search_fields = ('Name','Country')
+@admin.register(models.Call)
+class CallAdmin(admin.ModelAdmin):
+    '''Admin View for Call'''
 
-@admin.register(models.CustomerContact)
-class CustomerContactAdmin(admin.ModelAdmin):
-    '''Admin View for CustomerContact'''
-
-    list_display = ('Customer','Name')
-    list_filter = ('Customer',)
+    list_display = ('Date', 'Caller', 'Customer')
+    list_filter = ('Caller',)

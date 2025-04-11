@@ -20,6 +20,8 @@
 
       <link href="https://cdn.jsdelivr.net/npm/daisyui@latest/dist/full.css" rel="stylesheet" type="text/css" />
 
+      <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+
       <link rel="stylesheet" href="{% static 'style.css' %}">
       
       <link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/css/tom-select.css" rel="stylesheet">
@@ -69,9 +71,10 @@
           <li class="dropdown dropdown-hover">
             <label tabindex="0" class="cursor-pointer">Correspondance</label>
             <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
-              <li><a href="{% url 'callsData' %}">Calls</a></li>
-              <li><a href="{% url 'callsData' %}">Emails</a></li>
-              <li><a href="{% url 'callsData' %}">Meetings</a></li>
+              <li><a href="{% url 'pendingCalls' %}">Pending</a></li>
+              <li><a href="{% url 'callHistory' %}">Calls</a></li>
+              <li><a href="{% url 'pendingCalls' %}">Emails</a></li>
+              <li><a href="{% url 'pendingCalls' %}">Meetings</a></li>
             </ul>
           </li>
           <li class="dropdown dropdown-hover">
@@ -88,8 +91,12 @@
       </div>
       <div class="navbar-end">
         <ul class="menu menu-horizontal px-1 items-center">
-          <li><span>Logged in as Firasat |</span></li>
-          <li><a href="/logout">Logout</a></li>
+          <li>
+            <span>Logged in as {{user.first_name}}</span>
+          </li>
+          <li>
+            <a href="/logout">Logout</a>
+          </li>
           <li><a href="/">Go to Main</a></li>
         </ul>
       </div>

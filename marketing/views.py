@@ -6,7 +6,7 @@ from django.urls import reverse
 import json
 
 from .theme import theme
-from .services import customer_service
+from .services import customer_service, calling_service
 from . import models
 from .services.generic_services import refineJson, applySearch, paginate
 
@@ -115,5 +115,32 @@ def ToggleAssignment(request: HttpRequest, pk: int):
     return redirect(reverse('customerData'))
 
 @login_required(login_url='/login')
-def Calls(request: HttpResponse):
-    return HttpResponse('In Progress')
+def PendingCalls(request: HttpRequest):
+    if request.method == 'POST':
+        pass
+    else:
+        return HttpResponse('In Progress')
+
+@login_required(login_url='/login')
+def CallHistory(request: HttpRequest):
+    if request.method == 'POST':
+        pass
+    else:
+        startDate = request.GET.get('startDate')
+        endDate = request.GET.get('endDate')
+        customerFilter = request.GET.get('customerFilter')
+        search = request.GET.get('search','')
+
+        if customerFilter == 'None':
+            customerFilter = None
+        
+        callsHostory = calling_service.GetCallHistory(startDate, endDate, customerFilter, request.user)
+
+        customers = models.Customer.objects.filter(AccountManager=request.user).values('id', 'Name')
+
+        context = {
+            'startDate': startDate, 'endDate': endDate, 'customerFilter': customerFilter, 'search':search,
+            'customers': customers,
+            'theme': theme
+        }
+        return render(request, 'calls/home.html', context)
