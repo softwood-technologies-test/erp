@@ -18,4 +18,5 @@ urlpatterns = [
     path ('', include ('apparelManagement.urls')),
     path ('', include ('qualityControl.urls')),
     path ('', include ('marketing.urls')),
+    path ('', include ('prodManagement.urls')),
 ]
