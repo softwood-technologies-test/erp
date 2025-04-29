@@ -61,6 +61,7 @@
             <label tabindex="0" class="cursor-pointer">Presets</label>
             <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
               <li><a href="{% url 'operations' %}">Operations</a></li>
+              <li><a href="{% url 'machines' %}">Machines</a></li>
             </ul>
           </li>
         </ul>
@@ -123,11 +124,14 @@
     </div>
 
     <script>    //To add the options for selects
-      async function appendOptions (elementId, options, selected=null) {
+      async function appendOptions (elementId, options, selected=null, removePrevious=true) {
           try {
             const element = document.getElementById(elementId);    
-            element.innerHTML = ''; 
-
+            
+            if (removePrevious) {
+              element.innerHTML = ''; 
+            }
+            
             const fragment = document.createDocumentFragment();
 
             options.forEach(optionData => {

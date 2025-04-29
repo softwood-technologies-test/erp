@@ -30,15 +30,65 @@
                     <span class="text-sm text-gray-500 mb-1">Machine Type:</span>
                     <select name="machineType" class="{{theme.dropdown}}" id="machineType" onchange="this.form.submit()"></select>
                 </div>
-                <div class="flex flex-col col-[8/10] items-center">
+                <div class="flex flex-col col-[8/9] items-center">
                     <span class="text-sm text-gray-500 mb-1">Min Rate/SAM:</span>
                     <input type="number" min="0" class="{{theme.textInput}}" name="ratePerSAM" value="{{ratePerSAM}}" placeholder="">
                 </div>
-                <div class="flex col-[10/11] btn-group {{theme.align}} justify-end">
+                <div class="flex col-[9/11] btn-group {{theme.align}} justify-end ml-1">
                     <button type="submit" class="{{theme.buttonBasic}}">Search</button>
+                    <a class="{{theme.buttonBasic}}" href="{% url 'addOperation' %}" role="button">Add</a>
                 </div>
             </div>
         </form>
+    </div>
+
+    <div id="operationTable" class="mt-6">
+        <table class="{{theme.table}}">
+            <tr class = "{{theme.tableHead}}">
+                <th scope="col">Code</th>
+                <th scope="col">Name</th>
+                <th scope="col">Section</th>
+                <th scope="col">Category</th>
+                <th scope="col">Level</th>
+                <th scope="col">Type</th>
+                <th scope="col">SAM</th>
+                <th scope="col">Rate</th>
+            </tr>
+            <tbody id="tableData" class = "{{theme.tableBody}}">
+                {% for data in operations%}
+                <tr class="{{theme.tableBodyRow}}">
+                    <td class="{{theme.hyperLink}}"> <a href="{% url 'editOperation' pk=data.id %}">{{ data.id }}</a></td>
+                    <td>{{ data.Name }}</td>
+                    <td>{{ data.Section }}</td>
+                    <td>{{ data.Category }}</td>
+                    <td>{{ data.SkillLevel }}</td>
+                    <td>{{ data.MachineType }}</td>
+                    <td>{{ data.SMV }}</td>
+                    <td>{{ data.Rate }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="{{ theme.pagination }}">
+        <div class="btn-group">
+            {% if page_obj.has_previous %}
+                <a href="?page=1&search={{search}}&sectionFilter={{sectionFilter}}&skillLevel={{skillLevel}}&machineType={{machineType}}&ratePerSAM={{ratePerSAM}}" class="btn btn-sm">First</a>
+                <a href="?page={{ page_obj.previous_page_number }}&search={{search}}&sectionFilter={{sectionFilter}}&skillLevel={{skillLevel}}&machineType={{machineType}}&ratePerSAM={{ratePerSAM}}" class="btn btn-sm">Previous</a>
+            {% else %}
+                <button class="btn btn-sm" disabled>First</button>
+                <button class="btn btn-sm" disabled>Previous</button>
+            {% endif %}
+    
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&search={{search}}&sectionFilter={{sectionFilter}}&skillLevel={{skillLevel}}&machineType={{machineType}}&ratePerSAM={{ratePerSAM}}" class="btn btn-sm">Next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}&search={{search}}&sectionFilter={{sectionFilter}}&skillLevel={{skillLevel}}&machineType={{machineType}}&ratePerSAM={{ratePerSAM}}" class="btn btn-sm">Last</a>
+            {% else %}
+                <button class="btn btn-sm" disabled>Next</button>
+                <button class="btn btn-sm" disabled>Last</button>
+            {% endif %}
+        </div>
     </div>
 
     <script> //To run when the page loads
@@ -55,8 +105,5 @@
 
             hideLoadingIcon();
         });
-    </script>
-    
-    <script>    //This code runs at the time of loading. It should be at the end of the page.
     </script>
 {% endblock content %}

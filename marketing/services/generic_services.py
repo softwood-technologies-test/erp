@@ -29,6 +29,6 @@ def dfToListOfDicts(df: pd.DataFrame):
     cols = list(df.columns)
 
     if df.empty:
-        return [{col: "" for col in cols}]
+        return []
     else:
         return [dict(zip(cols, row)) for row in df.values]
