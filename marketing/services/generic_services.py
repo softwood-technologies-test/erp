@@ -25,10 +25,7 @@ def dfToListOfDicts(df: pd.DataFrame):
     '''
     Converts a dataframe to a list of dicts
     '''
-
-    cols = list(df.columns)
-
     if df.empty:
         return []
     else:
-        return [dict(zip(cols, row)) for row in df.values]
+        return df.to_dict(orient='records')

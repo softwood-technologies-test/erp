@@ -318,8 +318,6 @@
             const rowToCopy = reqTableRows[0];
             const table = rowToCopy.parentElement;
 
-            removeSearchBox();
-
             //Delete previous data from the row to copy.
             const cols = rowToCopy.children;
             for (const col of cols) {
@@ -334,7 +332,7 @@
             const requirement = await response.json();
             
             rowToCopy.children[0].children[0].checked = false;
-            rowToCopy.children[1].children[0].value = requirement?.[0].InventoryCode ?? null;
+            rowToCopy.children[1].children[1].value = requirement?.[0].InventoryCode ?? null;
             rowToCopy.children[2].children[0].value = requirement?.[0].Variant ?? null;
             rowToCopy.children[3].children[0].value = requirement?.[0].Required ?? null;
             rowToCopy.children[4].children[0].value = requirement?.[0].Ordered ?? null;
@@ -344,7 +342,9 @@
                 const copy = rowToCopy.cloneNode(true);
                 copy.setAttribute("row",i+1);
 
-                copy.children[1].children[0].value = requirement?.[i].InventoryCode ?? null;
+                console.log(copy.children[1].children[1])
+
+                copy.children[1].children[1].value = requirement?.[i].InventoryCode ?? null;
                 copy.children[2].children[0].value = requirement?.[i].Variant ?? null;
                 copy.children[3].children[0].value = requirement?.[i].Required ?? null;
                 copy.children[4].children[0].value = requirement?.[i].Ordered ?? null;

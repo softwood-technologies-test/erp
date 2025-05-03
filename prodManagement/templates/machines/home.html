@@ -57,16 +57,16 @@
             </tr>
             <tbody id="tableData" class = "{{theme.tableBody}}">
                 {% for data in machines %}
-                <tr class="{{theme.tableBodyRow}}">
-                    <td class="{{theme.hyperLink}}"><a href="{% url 'editMachine' pk=data.id %}">{{ data.id }}</a></td>
-                    <td>{{ data.MachineId }}</td>
-                    <td>{{ data.Type }}</td>
-                    <td>{{ data.FunctionStatus }}</td>
-                    <td>{{ data.Manufacturer }}</td>
-                    <td>{{ data.ModelNumber }}</td>
-                    <td>{{ data.SerialNumber }}</td>
-                    <td>{{ data.Department }}</td>
-                </tr>
+                    <tr class="{{theme.tableBodyRow}}">
+                        <td class="{{theme.hyperLink}}"><a href="{% url 'editMachine' pk=data.id %}">{{ data.id }}</a></td>
+                        <td>{{ data.MachineId }}</td>
+                        <td>{{ data.Type }}</td>
+                        <td>{{ data.FunctionStatus }}</td>
+                        <td>{{ data.Manufacturer }}</td>
+                        <td>{{ data.ModelNumber }}</td>
+                        <td>{{ data.SerialNumber }}</td>
+                        <td>{{ data.Department }}</td>
+                    </tr>
                 {% endfor %}    
             </tbody>
         </table>

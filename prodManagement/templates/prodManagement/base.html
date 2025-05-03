@@ -60,6 +60,7 @@
           <li class="dropdown dropdown-hover">
             <label tabindex="0" class="cursor-pointer">Presets</label>
             <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+              <li><a href="{% url 'styleBulletins' %}">Style Bulletin</a></li>
               <li><a href="{% url 'operations' %}">Operations</a></li>
               <li><a href="{% url 'machines' %}">Machines</a></li>
             </ul>
@@ -152,22 +153,21 @@
     </script>
 
     <script>    //To show message to a user
-      function showMessage(message, timeOut = 3) {
+      function showMessage(message, timeOut = 3, baseClass = '{{theme.errorBox}}') {
         //Get the container element
         const messageContainer = document.getElementById('message-container');
 
         // Create a new alert element
         const messageElement = document.createElement('div');
         //Set the correct bootstap class
-        messageElement.classList.add('bg-red-100', 'border', 'border-red-400','text-red-700', 'px-4',
-        'py-3', 'rounded', 'relative', 'transition', 'duration-300', 'opacity-100');
+        messageElement.classList.add(...baseClass.split(' '));
         messageElement.setAttribute('role', 'alert');
         
         //Add a the message and close button to the message.
         messageElement.innerHTML = `
-          <span class="block sm:inline">${message}</span>
-          <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
-            <span class="material-icons cursor-pointer text-red-500">close</span>
+          <span class="{{theme.messageBoxBody}}">${message}</span>
+          <span class="{{theme.messageBoxClose}}">
+            <span class="material-icons cursor-pointer">close</span>
           </span>`;
 
         //Add the message element to the container
@@ -358,7 +358,7 @@
       
       async function addSearchBox() {
         //The keyword that is common in all search boxes
-        const keyword = "chosen";
+        const keyword = "tom_select";
         //Get elements that contain the key word.
         const searchBoxNodes = document.querySelectorAll(`[${keyword}*='true']`);
 
@@ -384,11 +384,12 @@
           id = `${id}_${row}`;
           dropdown.setAttribute('id', id);
 
-          //Apply the search box on the element, with the new ID.
-          $("#"+id).chosen({
-            search_contains: true,
-            width: `93%`
-          });
+          const selectSettings = {
+            create: false,
+            maxOptions: 50,
+          };
+
+          new TomSelect(`#${id}`,selectSettings);
         }
       }
     </script>
@@ -408,5 +409,144 @@
         }
       });
     </script>
+
+    <script> //This function shows searchbox for a select element
+      async function showSearchBox(source, url, nextFunction=null) {
+        source.style.display = 'none';
+
+        const originalOptions = Array.from(source.options).map(option => ({
+          value: option.value,
+          text: option.text,
+        }));
+        const originalValue = source.value;
+
+        const searchContainer = document.createElement('div');
+        searchContainer.classList.add('bg-base-100', 'rounded-box', 'shadow', 'w-full', 'mt-2', 'dark:bg-gray-900', 'dark:text-white');
+        searchContainer.style.zIndex = '10';
+        
+        const searchInput = document.createElement('input');
+        searchInput.type = 'text';
+        searchInput.placeholder = 'Type Here';
+        searchInput.style.marginTop = '0.5rem';
+        searchInput.classList.add(...'{{theme.textInput}}'.split(' '));
+        searchContainer.appendChild(searchInput);
+
+        const listContainer = document.createElement('ul');
+        listContainer.classList.add('menu');
+        searchContainer.appendChild(listContainer);
+
+        async function fetchOptons(searchTerm = '') {
+          try{
+            showLoadingIcon();
+            let response;
+
+            if (searchTerm === '') {
+              response = await fetch(`${url}?search=${originalValue}`);
+            } else {
+              response = await fetch(`${url}?search=${searchTerm}`);
+            }
+
+            if (!response.ok) {
+                console.error(`HTTP error! status: ${response.status}`);
+                listContainer.innerHTML = '<li class="disabled"><a>Error loading data</a></li>';
+                return;
+            }
+
+            const data = await response.json();
+            listContainer.innerHTML = ''; // Clear previous options from search container
+            source.innerHTML = ''; // Clear previous options from original dropdown
+
+            if (data && data.length > 0) {
+              for (const option of data) {
+                const listItem = document.createElement('li');
+                const button = document.createElement('button');
+                button.classList.add('w-full', 'text-left', 'hover:bg-base-200', 'dark:hover:bg-gray-800', 'focus:outline-none');
+                button.textContent = option.text;
+                button.value = option.value;
+                button.type = 'button';
+
+                const newOption = document.createElement('option');
+                newOption.value = option.value;
+                newOption.text = option.text;
+                source.appendChild(newOption);
+
+                listItem.appendChild(button);
+                listContainer.appendChild(listItem);
+                
+                button.onclick = function () {
+                  source.value = this.value;
+                  source.style.display = '';
+                  searchContainer.remove();
+                  document.removeEventListener('click', handleClickOutside);
+
+                  if (nextFunction) {
+                    nextFunction(source);
+                  }
+                };
+              }
+            } else {
+              const listItem = document.createElement('li');
+              listItem.classList.add('disabled');
+              listItem.textContent = 'No matching options';
+              listContainer.appendChild(listItem);
+            }
+            hideLoadingIcon();
+          } catch (error) {
+            console.error(`Error fetching Options: ${error}`);
+            listContainer.innerHTML = '<li class="disabled"><a>Error loading data</a></li>';
+            return;
+          }
+        }
+
+        await fetchOptons();
+
+        let timeoutId;
+        searchInput.addEventListener('input', async function() {
+          const searchTerm = searchInput.value.trim();
+
+          // Debounce the input to avoid excessive backend calls
+          clearTimeout(timeoutId);
+
+          timeoutId = setTimeout(async () => {
+              await fetchOptons(searchTerm);
+          }, 300);
+        });
+
+        searchContainer.appendChild(listContainer);
+        source.parentNode.insertBefore(searchContainer, source.nextSibling);
+        searchInput.focus();
+
+        function handleClickOutside(clickEvent) {
+          if (!searchContainer.contains(clickEvent.target) && clickEvent.target !== source) {
+            closeSearchBox();
+          }
+        }
+
+        function handleEscapeKey(keyEvent) {
+          if (keyEvent.key === 'Escape') {
+            closeSearchBox();
+          }
+        }
+
+        function closeSearchBox() {
+          searchContainer.remove();
+          source.style.display = '';
+          source.innerHTML = '';
+
+          for (const option of originalOptions) {
+            const newOption = document.createElement('option');
+            newOption.value = option.value;
+            newOption.text = option.text;
+            source.appendChild(newOption);
+          }
+          source.value = originalValue;
+
+          document.removeEventListener('click', handleClickOutside);
+        }
+        document.addEventListener('click', handleClickOutside);
+        searchInput.addEventListener('keydown', handleEscapeKey);
+      }
+    </script>
+
   </body>
 </html>

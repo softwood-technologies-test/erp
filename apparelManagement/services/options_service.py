@@ -228,12 +228,6 @@ def getMerchandisers(request):
         return JsonResponse(data, safe=False)
 
 @login_required(login_url='/login')
-def getOperationSection(request, pk):
-    if request.method == 'GET':
-        section = models.OperationsBank.objects.get(Code=pk).Section
-        return JsonResponse(section, safe=False)
-
-@login_required(login_url='/login')
 def getWorkOrders(request: HttpRequest):
     if request.method == 'GET':
         status = request.GET.get('status', None)

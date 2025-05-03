@@ -301,7 +301,7 @@
     </script>
 
     <script> //To send data to server
-        function submitForms() {
+        async function submitForms() {
             const allForms = document.forms;
 
             const demandForm = allForms['demandForm']; 
@@ -311,7 +311,7 @@
 
             let data = {};
              
-            //Prepare the data for Style Group
+            //Prepare the data for Demand Group
             let group = 'demand';
             for (const element of demand) {
                 if (element.name) {
@@ -322,7 +322,7 @@
             //Prepare the data for inventory Group
             data = formToTable('inventory', inventoryForm, data);
             
-            submitData(data)
+            await submitData(data)
         }
 
         //Convert data to Json and send to server

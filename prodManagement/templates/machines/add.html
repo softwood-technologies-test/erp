@@ -5,7 +5,7 @@
 {% endblock title %}
 
 {% block content %}
-    <form method="POST" id="operationForm" autocomplete="off">
+    <form method="POST" id="machineForm" autocomplete="off">
         {% csrf_token %}          <!--This is to protect against CSRF attacks-->
         <div class="{{theme.border}}">
             <div class="grid grid-cols-4 my-2 {{theme.justify}} {{theme.align}}">

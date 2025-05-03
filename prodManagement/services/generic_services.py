@@ -1,5 +1,9 @@
+"""
+Contains generic variables and functions
+"""
+
 from marketing.services.generic_services import askAI, dfToListOfDicts, updateModelWithDF
-from apparelManagement.services.generic_services import applySearch, paginate
+from apparelManagement.services.generic_services import applySearch, paginate, refineJson, convertTexttoObject
 
 operationSections = [
         {'value': None, 'text': 'All',},
@@ -82,3 +86,22 @@ machineManufacturers = [
     {'value': 'Algotex', 'text': 'Algotex'},
     {'value': 'Fabcare', 'text': 'Fabcare'},
 ]
+
+changeOverTimes = {
+    'AutoBone': 4,
+    'BTK': 1,
+    'CoverStitch': 1,
+    'DNCS': 0.5,
+    'DNLS': 0.3,
+    'Eyelet': 0.5,
+    'Feedo': 3,
+    'Flat': 4,
+    'Loop': 0.3,
+    'OL': 1,
+    'SFTY': 0.5,
+    'SNCS': 0.5,
+    'SNLS': 0.3,
+    'WB': 3,
+    'ZigZag': 4,
+    'Manu': 0,
+}

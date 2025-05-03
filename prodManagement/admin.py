@@ -13,18 +13,10 @@ class ImpExp(ImportExportModelAdmin):
     list_display = ('MachineId', 'Manufacturer', 'Department')
     resource_class = ImpExpResource"""
 
-@admin.register(models.Operation)
-class OperationAdmin(admin.ModelAdmin):
-    '''Admin View for Operation'''
+@admin.register(models.StyleBulletinOperation)
+class StyleBulletinAdmin(admin.ModelAdmin):
+    '''Admin View for StyleBulletin'''
 
-    list_display = ('id','Name')
+    list_display = ('StyleBulletin',)
     list_filter = ('Section',)
-    search_fields = ('Name',)
-
-@admin.register(models.Machines)
-class MachinesAdmin(admin.ModelAdmin):
-    '''Admin View for Machines'''
-
-    list_display = ('MachineId', 'Manufacturer', 'Department')
-    list_filter = ('Department',)
-    search_fields = ('MachineId', 'Type',)
+    search_fields = ('StyleBulletin','Operation')

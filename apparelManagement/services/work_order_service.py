@@ -460,6 +460,8 @@ def CalculateRequirement(styleCode: str, orderNumber: int):
         del dfSimpleConsumption, quantity
         dfRequirement = dfSimpleRequirement
         del dfSimpleRequirement
+    else:
+        dfRequirement = pd.DataFrame()
     
     if not dfVariantConsumption.empty:
         dfVariantRequirement = pd.merge(left=dfVariantConsumption, right=dfVariants, how='cross')
@@ -472,7 +474,7 @@ def CalculateRequirement(styleCode: str, orderNumber: int):
             dfRequirement = dfVariantRequirement     
         else:
             dfRequirement = pd.concat([dfRequirement, dfVariantRequirement])
-        del dfVariantRequirement  
+        del dfVariantRequirement 
 
     if not dfSizeOnlyConsumption.empty:
         dfModifiedVariants = pd.DataFrame(dfVariants)

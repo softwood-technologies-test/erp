@@ -1,5 +1,5 @@
 from django.db import models
-from apparelManagement.models import Department
+from apparelManagement.models import Department, StyleCard
 
 class Operation(models.Model):
     id = models.AutoField(primary_key=True)
@@ -37,4 +37,31 @@ class Machines(models.Model):
 
         indexes = [
             models.Index(fields=['FunctionStatus', 'Department'])
+        ]
+
+class StyleBulletin(models.Model):
+    id = models.AutoField(primary_key=True)
+    StyleCard = models.ForeignKey(StyleCard, on_delete=models.PROTECT)
+
+    class Meta:
+        """Meta definition for Style Bulletin."""
+        indexes = [
+            models.Index(fields=['StyleCard'])
+        ]
+
+class StyleBulletinOperation(models.Model):
+    id = models.AutoField(primary_key=True)
+    StyleBulletin = models.ForeignKey(StyleBulletin, on_delete=models.CASCADE)
+    Sequence = models.PositiveIntegerField()
+    Operation = models.ForeignKey(Operation, on_delete=models.PROTECT)
+    Section = models.CharField(max_length=31)
+    IsStart = models.BooleanField(default=False)
+    IsEnd = models.BooleanField(default=False)
+
+    class Meta:
+        """Meta definition for Style Bulletin Operation."""
+        indexes = [
+            models.Index(fields=['StyleBulletin']),
+            models.Index(fields=['Operation']),
+            models.Index(fields=['Section']),
         ]

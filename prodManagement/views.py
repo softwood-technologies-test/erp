@@ -3,8 +3,10 @@ from django.http import HttpRequest, HttpResponse
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 
+import json
+
 from .theme import theme
-from .services import stitching_service, generic_services
+from .services import stitching_service, generic_services, bulletin_service
 from . import models
 
 @login_required(login_url='/login')
@@ -171,11 +173,102 @@ def EditMachine(request: HttpResponse, pk: int):
             return render(request, 'operations/edit.html', context)
     else:
         data = stitching_service.GetDataForMachine(machine)
-
-        print(data)
         
         context = {
             'data': data,
             'theme': theme,
         }
         return render(request, 'machines/edit.html', context)
+
+@login_required(login_url='/login')
+def StyleBulletin(request: HttpRequest):
+    if request.method != 'GET':
+        return HttpResponse('Not Allowed', status=401)
+
+    pageNumber = request.GET.get('page', 1)
+    search = request.GET.get('search', '')
+    minSAM = request.GET.get('minSAM', None)
+
+    if minSAM:
+        minSAM = float(minSAM)
+
+    data = bulletin_service.GetBulletinList(minSAM)
+    data = generic_services.applySearch(data, search)
+    print(data)
+    page = generic_services.paginate(data, pageNumber)
+
+    context = {
+        'bulletins': page.object_list, 'page_obj': page,
+        'search': search, 'minSAM': minSAM,
+        'theme': theme,
+    }
+
+    return render(request, 'bulletin/home.html', context)
+
+@login_required(login_url='/login')
+def AddStyleBulletin(request: HttpRequest):
+    if request.method == 'POST':
+        jsonData = json.loads(request.body.decode('utf-8'))
+
+        dfBulletin, dfBulletinDetails = generic_services.refineJson(jsonData)
+
+        try:
+            styleBulletinId = bulletin_service.AddStyleBulletin(dfBulletin, dfBulletinDetails)
+            return HttpResponse(styleBulletinId, status=200)
+        except Exception as e:
+            return HttpResponse(e, status=401)
+    else:
+        context = {
+            'theme': theme,
+        }
+
+        return render(request, 'bulletin/add.html', context)
+
+@login_required(login_url='/login')
+def EditStyleBulletin(request: HttpRequest, pk: int):
+    try:
+        StyleBulletin = models.StyleBulletin.objects.get(id=pk)
+    except:
+        return HttpResponse('Resource not found', status=404)
+
+    if request.method == 'POST':
+        jsonData = json.loads(request.body.decode('utf-8'))
+
+        dfBulletinDetails = generic_services.refineJson(jsonData)
+
+        try:
+            bulletin_service.UpdateStyleBulletin(StyleBulletin, dfBulletinDetails)
+            return HttpResponse('Saved Successfully', status=200)
+        except Exception as e:
+            return HttpResponse(e, status=401)
+    else:
+        data, operations = bulletin_service.GetDataForBulletin(StyleBulletin)
+        context = {
+            'data': data,
+            'operations': operations, 'operationsJson': json.dumps(list(operations)),
+            'theme': theme,
+        }
+        return render(request, 'bulletin/edit.html', context)
+
+@login_required(login_url='/login')
+def DuplicateStyleBulletin(request: HttpRequest, pk: int):
+    try:
+        styleBulletin = models.StyleBulletin.objects.get(id=pk)
+    except:
+        return HttpResponse('Resource not found', status=404)
+    
+    if request.method == 'POST':
+        targetCode = request.POST.get('target')
+
+        try:
+            styleBulletinId = bulletin_service.DuplicateStyleBulletin(styleBulletin, targetCode)
+            return redirect('editStyleBulletin', pk=styleBulletinId)
+        except Exception as e:
+            print(e)
+            return HttpResponse(e, status=401)
+    else:
+        context = {
+            'source': styleBulletin,
+            'theme': theme
+        }
+        return render(request, 'bulletin/duplicate.html', context)

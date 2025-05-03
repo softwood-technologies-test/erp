@@ -54,7 +54,10 @@ theme = {
     'dialogBoxFooter': 'modal-action justify-center p-4',
 
     #Message Box
-    'messageBox': 'alert alert-warning mb-4',
+    'errorBox': 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative transition duration-300 opacity-100',
+    'successBox': 'bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative transition duration-300 opacity-100',
+    'messageBoxBody': 'block sm:inline',
+    'messageBoxClose': 'absolute top-0 bottom-0 right-0 px-4 py-3',
 
     #True/False Representation
     'trueFalseHeading': 'indicator',
