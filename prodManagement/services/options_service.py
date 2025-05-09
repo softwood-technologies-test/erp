@@ -113,3 +113,39 @@ def getOperationSection(request, pk):
     
     section = models.Operation.objects.get(id=pk).Section
     return JsonResponse(section, safe=False)
+
+@login_required(login_url='/login')
+def GetOrdersWithMissingCS (request: HttpRequest):
+    if request.method != 'GET':
+        return HttpResponse('Not Allowed', status=405)
+    
+    search = request.GET.get('search', '')
+
+    addedOrders = models.Cut.objects.values_list('WorkOrder', flat=True)
+
+    pendingOrders = models.WorkOrder.objects.exclude(OrderNumber__in=addedOrders)
+    del addedOrders
+    if search:
+        searchFilter = Q(OrderNumber__icontains=search)
+        searchFilter = searchFilter | Q(StyleCode__StyleCode__icontains=search)
+        searchFilter = searchFilter | Q(Customer__Name__icontains=search)
+        pendingOrders = pendingOrders.filter(searchFilter)
+    del search
+    
+    pendingOrders = pendingOrders[:15]
+    
+    fields = ['OrderNumber', 'StyleCode', 'Customer']
+    pendingOrders = pendingOrders.values(*fields)
+
+    if pendingOrders:
+        dfPendingOrders = pd.DataFrame(pendingOrders)
+    else:
+        dfPendingOrders = pd.DataFrame(columns=fields)
+    del pendingOrders, fields
+
+    dfPendingOrders['text'] = dfPendingOrders['OrderNumber'].astype(str) + ' - ' + dfPendingOrders['StyleCode'].astype(str) +' - '+ dfPendingOrders['Customer'].astype(str)
+    dfPendingOrders.rename(inplace=True, columns={'OrderNumber': 'value'})
+    dfPendingOrders.drop(inplace=True, columns=['StyleCode', 'Customer'])
+
+    pendingOrders = dfToListOfDicts(dfPendingOrders)
+    return JsonResponse(pendingOrders, safe=False)

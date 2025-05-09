@@ -1,12 +1,18 @@
 from django.shortcuts import render, redirect
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import  AllowAny
+from rest_framework.request import Request
+import rest_framework
 
 import json
 
 from .theme import theme
-from .services import stitching_service, generic_services, bulletin_service
+from .services import stitching_service, generic_services, bulletin_service, core_sheet_service
 from . import models
 
 @login_required(login_url='/login')
@@ -194,7 +200,6 @@ def StyleBulletin(request: HttpRequest):
 
     data = bulletin_service.GetBulletinList(minSAM)
     data = generic_services.applySearch(data, search)
-    print(data)
     page = generic_services.paginate(data, pageNumber)
 
     context = {
@@ -272,3 +277,78 @@ def DuplicateStyleBulletin(request: HttpRequest, pk: int):
             'theme': theme
         }
         return render(request, 'bulletin/duplicate.html', context)
+
+@login_required(login_url='/login')
+def SummariseStyleBulletin(request: HttpRequest):
+    if request.method != 'POST':
+        return HttpResponse('Not Allowed', status=403)
+
+    jsonData = json.loads(request.body.decode('utf-8'))
+
+    operations, id = generic_services.refineJson(jsonData)
+    id = int(id.iloc[0, 0])
+
+    try:
+        StyleBulletin = models.StyleBulletin.objects.get(id=id)
+    except:
+        return HttpResponse('Resource Not Found', status=401)
+
+    summary = bulletin_service.SummariseBulletin(StyleBulletin, operations)
+
+    return JsonResponse(summary, safe=False)
+
+class Temp(APIView):
+    permission_classes = [AllowAny]
+    def post (self, request:Request):
+        deviceId = request.data.get('deviceId')  
+        tagId = request.data.get('tagId')
+
+        print(f"Tag: {tagId}", f"Device: {deviceId}")
+
+        response = {"message": "Success"}
+        status = rest_framework.status.HTTP_200_OK
+
+        return Response (data=response, status=status)
+
+@login_required(login_url='/logn')
+def CoreSheet (request: HttpRequest):
+    if request.method != 'GET':
+        return HttpResponse('Not Allowed', status=401)
+    
+    pageNumber = request.GET.get('page', 1)
+    search = request.GET.get('search', '')
+    workOrder = request.GET.get('workOrder', None)
+
+    try:
+        workOrder = models.WorkOrder.objects.get(OrderNumber=workOrder)
+    except:
+        workOrder = None
+    
+    data = core_sheet_service.GetCoreSheetList(workOrder)
+    data = generic_services.applySearch(data, search)
+    page = generic_services.paginate(data, pageNumber)
+
+    context = {
+        'coreSheets': page.object_list, 'page_obj': page,
+        'search': search,
+        'theme': theme,
+    }
+    if workOrder:
+        context.update({'workOrder': workOrder.OrderNumber})
+    else:
+        context.update({'workOrder': ''})
+    return render(request, 'CS/home.html', context)
+
+@login_required(login_url='/login')
+def AddCoreSheet (request: HttpRequest):
+    if request.method == 'POST':
+        pass
+    else:
+        context = {
+            'theme': theme,
+        }
+        return render(request, 'CS/add.html', context)
+
+@login_required(login_url='/login')
+def EditCoreSheet(request: HttpRequest, workOrder: int):
+    return HttpResponse('In process')

@@ -313,24 +313,6 @@ class InvRequirement (models.Model):
             models.Index(fields=['OrderNumber']),
         ]
 
-class CoreSheet (models.Model):
-    """Data model for a Work Order's cutting details."""
-
-    id = models.AutoField (primary_key=True)
-    OrderNumber = models.ForeignKey (WorkOrder, on_delete = models.PROTECT)
-    Size = models.CharField (max_length=50)
-    Inseam= models.CharField (max_length=50, blank=True, null=True)
-    CutDate = models.DateField (auto_now_add=True)
-    Cut = models.PositiveIntegerField()
-    Bundle = models.PositiveIntegerField()
-    Quantity = models.PositiveBigIntegerField()
-
-    class Meta:
-        #This reduces the loading time when reading the database, but increases writing time.
-        indexes = [
-            models.Index(fields=['OrderNumber']),
-        ]
-
 class PurchaseOrder (models.Model):
     """Data model for purchase orders' main data."""
 

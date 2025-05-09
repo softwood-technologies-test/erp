@@ -65,6 +65,12 @@
               <li><a href="{% url 'machines' %}">Machines</a></li>
             </ul>
           </li>
+          <li class="dropdown dropdown-hover">
+            <label tabindex="0" class="cursor-pointer">Cutting</label>
+            <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+              <li><a href="{% url 'coreSheets' %}">Core Sheet</a></li>
+            </ul>
+          </li>
         </ul>
       </div>
       <div class="navbar-end">
@@ -449,6 +455,7 @@
             if (!response.ok) {
                 console.error(`HTTP error! status: ${response.status}`);
                 listContainer.innerHTML = '<li class="disabled"><a>Error loading data</a></li>';
+                hideLoadingIcon();
                 return;
             }
 

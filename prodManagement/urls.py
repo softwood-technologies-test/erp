@@ -18,6 +18,12 @@ urlpatterns = [
     path('productivity/bulletin/<int:pk>/edit', views.EditStyleBulletin, name='editStyleBulletin'),
     path('producitivty/bulletin/styles/missing', options_service.GetStylesWithoutBulletins, name='missingStylesForBulletins'),
     path('productivity/bulletin/<int:pk>/duplicate', views.DuplicateStyleBulletin, name='duplicateStyleBulletin'),
+    path('productivity/bulletin/summarise', views.SummariseStyleBulletin, name='summariseSytleBulletin'),
+
+    path('productivity/core-sheets', views.CoreSheet, name='coreSheets'),
+    path('productivity/core-sheet/add', views.AddCoreSheet, name='addCoreSheet'),
+    path('productivity/core-sheet/<int:workOrder>/edit', views.EditCoreSheet, name='editCoreSheet'),
+    path('producitivty/core-sheet/orders/missing', options_service.GetOrdersWithMissingCS, name='missingCS'),
 
     path('options/operations', options_service.GetOperations, name='operationsDropdown'),
     path('options/operations/sections', options_service.GetOperationSections, name='opSecs'),
@@ -25,5 +31,7 @@ urlpatterns = [
     path('options/operations/categories', options_service.GetOperationCategories, name='opCats'),
     path('options/machines/types', options_service.GetMachineTypes, name='machTypes'),
     path('options/machines/manufacturers', options_service.GetMachineManufacturers, name='machManufacturers'),
+
+    path('api/temp', views.Temp.as_view(), name='temp'),
 ]
 

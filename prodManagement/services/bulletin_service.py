@@ -153,6 +153,9 @@ def GetBulletinList(minSAM: float):
     #Round up the lead-time to the nearest half day.
     dfBulletinOperations['LeadTime'] = np.ceil((dfBulletinOperations['LeadTime']/8) * 2) / 2
 
+    if minSAM:
+        dfBulletinOperations = dfBulletinOperations[dfBulletinOperations['SMV']>=minSAM]
+
     return generic_services.dfToListOfDicts(dfBulletinOperations)
 
 def DuplicateStyleBulletin(sourceBulletin: models.StyleBulletin, targetCode: str):
@@ -181,3 +184,77 @@ def DuplicateStyleBulletin(sourceBulletin: models.StyleBulletin, targetCode: str
         operation.save()
     
     return targetBulletin.id
+
+def SummariseBulletin(styleBulletin: models.StyleBulletin, dfCurrentOperations: pd.DataFrame):
+    dfCurrentOperations.drop(inplace=True, columns=['Section'])
+
+    fields = ['Operation']
+    previousOperations = models.StyleBulletinOperation.objects.filter(StyleBulletin=styleBulletin).values(*fields)
+
+    if previousOperations:
+        dfPreviousOperations = pd.DataFrame(previousOperations)
+    else:
+        dfPreviousOperations = pd.DataFrame(columns=fields)
+    del previousOperations
+
+    fields = ['id', 'SMV', 'Rate', 'SkillLevel']
+    alloperations = (dfPreviousOperations['Operation'].to_list()) + (dfCurrentOperations['Operation'].astype(int).to_list())
+    operations = models.Operation.objects.filter(id__in=alloperations).values(*fields)
+
+    if operations:
+        dfOperations = pd.DataFrame(operations)
+    else:
+        dfOperations = pd.DataFrame(columns=fields)
+    del operations, fields
+
+    dfCurrentOperations['Operation'] = dfCurrentOperations['Operation'].astype(int)
+    dfBulletinOperations = pd.merge(left=dfCurrentOperations, right=dfPreviousOperations, on='Operation', how='outer', indicator=True)
+    del dfCurrentOperations, dfPreviousOperations
+    dfBulletinOperations.drop(inplace=True, columns=['id'])
+
+    dfBulletinOperations = pd.merge(left=dfBulletinOperations, right=dfOperations, left_on='Operation', right_on='id', how='left')
+    del dfOperations
+    dfBulletinOperations.drop(inplace=True, columns={'id'})
+
+    mergeMapping = {'left_only': 'After', 'right_only': 'Before', 'both': 'Both'}
+    dfBulletinOperations['_merge'] = dfBulletinOperations['_merge'].replace(mergeMapping)
+    del mergeMapping
+
+    summaryData = {}
+    for key in ['SMV', 'Rate']:
+        summaryData[key] = {'Before': 0, 'After': 0}
+    summaryData['SkillLevel'] = {'Before': [], 'After': []}
+    
+    for _, row in dfBulletinOperations.iterrows():
+        merge = row['_merge']
+        smv = row['SMV']
+        rate = row['Rate']
+        skillLevel = int(row['SkillLevel'])
+
+        if merge in ['Before', 'Both']:
+            summaryData['SMV']['Before'] += smv
+            summaryData['Rate']['Before'] += rate
+            summaryData['SkillLevel']['Before'].append(skillLevel)
+        
+        if merge in ['After', 'Both']:
+            summaryData['SMV']['After'] += smv
+            summaryData['Rate']['After'] += rate
+            summaryData['SkillLevel']['After'].append(skillLevel)
+
+    del dfBulletinOperations
+
+    beforeSkillLevel = summaryData['SkillLevel']['Before']
+    if beforeSkillLevel:
+        beforeSkillLevel = sum(beforeSkillLevel) / len(beforeSkillLevel)
+        summaryData['SkillLevel']['Before'] = round(beforeSkillLevel, 2)
+    else:
+        summaryData['SkillLevel']['Before'] = 0
+
+    afterSkillLevel = summaryData['SkillLevel']['After']
+    if afterSkillLevel:
+        afterSkillLevel = sum(afterSkillLevel) / len(afterSkillLevel)
+        summaryData['SkillLevel']['After'] = round(afterSkillLevel, 2)
+    else:
+        summaryData['SkillLevel']['After'] = 0
+
+    return summaryData

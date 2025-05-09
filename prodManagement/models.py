@@ -1,5 +1,5 @@
 from django.db import models
-from apparelManagement.models import Department, StyleCard
+from apparelManagement.models import Department, StyleCard, WorkOrder
 
 class Operation(models.Model):
     id = models.AutoField(primary_key=True)
@@ -64,4 +64,31 @@ class StyleBulletinOperation(models.Model):
             models.Index(fields=['StyleBulletin']),
             models.Index(fields=['Operation']),
             models.Index(fields=['Section']),
+        ]
+
+class Cut(models.Model):
+    id = models.AutoField(primary_key=True)
+    WorkOrder = models.ForeignKey(WorkOrder, on_delete=models.PROTECT)
+    Shade = models.CharField(max_length=31)
+    WarpShrinkage = models.FloatField()
+    WeftShrinkage = models.FloatField()
+    Inseam = models.CharField(max_length=31, null=True, blank=True)
+    NoOfPlies = models.PositiveIntegerField()
+    CutNumber = models.PositiveIntegerField()
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['WorkOrder']),
+        ]
+
+class Bundle(models.Model):
+    id =  models.AutoField(primary_key=True)
+    Cut = models.ForeignKey(Cut, on_delete=models.CASCADE)
+    Size = models.CharField(max_length=31)
+    Bundle = models.PositiveIntegerField()
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['Cut']),
+            models.Index(fields=['Size']),
         ]
