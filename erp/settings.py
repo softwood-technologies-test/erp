@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-gn+q6*fm^f@8mh2+ny!6^#i-%iko@i87#0vgrn2e7mbn(rhiv%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.2.247', '206.42.124.10']
+ALLOWED_HOSTS = ['192.168.2.247', '206.42.124.10','127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -99,7 +99,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'mssql',
         'NAME': 'erp',
-        'HOST': 'localhost',
+        # 'HOST': 'localhost',
+        'HOST': 'localhost\\SQLEXPRESS',
         'PORT': '1433',
         'USER': 'sa',
         'PASSWORD': 'Softwood@ATT1',

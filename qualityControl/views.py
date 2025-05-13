@@ -9,7 +9,7 @@ from .services import trim_audit_service
 from .theme import theme
 from .services.generic_services import paginate, applySearch, refineJson
 
-login_required(login_url='/login')
+@login_required(login_url='/login')
 def Home(request: HttpRequest):
     context = {'theme': theme}
     
