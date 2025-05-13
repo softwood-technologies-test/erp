@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'import_export',
     'tempus_dominus',
-    'fontawesomefree',
+    'fontawesome',
     'django_countries',
 ]
 

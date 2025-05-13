@@ -1,0 +1,9 @@
+django==4.2.10
+sql_server.pyodbc==1.0.0
+djangorestframework==3.14.0
+crispy-forms==1.14.0
+crispy-bootstrap5==1.0.0
+tempus-dominus==6.1.0
+fontawesome==6.0.0
+django-countries==7.0.0
+mssql-django==1.4
