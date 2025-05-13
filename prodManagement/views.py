@@ -12,7 +12,7 @@ import rest_framework
 import json
 
 from .theme import theme
-from .services import stitching_service, generic_services, bulletin_service, core_sheet_service
+from .services import stitching_service, generic_services, bulletin_service, core_sheet_service, worker_service
 from . import models
 
 @login_required(login_url='/login')
@@ -310,7 +310,7 @@ class Temp(APIView):
 
         return Response (data=response, status=status)
 
-@login_required(login_url='/logn')
+@login_required(login_url='/login')
 def CoreSheet (request: HttpRequest):
     if request.method != 'GET':
         return HttpResponse('Not Allowed', status=401)
@@ -352,3 +352,35 @@ def AddCoreSheet (request: HttpRequest):
 @login_required(login_url='/login')
 def EditCoreSheet(request: HttpRequest, workOrder: int):
     return HttpResponse('In process')
+
+@login_required(login_url='/login')
+def Workers(request: HttpRequest):
+    if request.method != 'GET':
+        return HttpResponse('Not Allowed', status=401)
+    
+    context = {
+        'theme': theme,
+    }
+    return render(request, 'workers/home.html', context)
+
+@login_required(login_url='/login')
+def AddWorker(request: HttpRequest):
+    if request.method == 'POST':
+        fields = ['WorkerCode', 'WorkerName', 'DateOfBirth', 'FatherSpouseName', 'Department', 'SubDepartment', 'CNIC', 'Status', 'Gender', 'User']
+        data = {field: request.POST.get(field) for field in fields}
+
+        try:
+            workerCode = worker_service.AddWoker(data)
+            return redirect(reverse('editOperation', kwargs={'pk': workerCode}))
+        except Exception as e:
+            print(e)
+            context = {
+                'error': e, 'data': data,
+                'theme': theme,
+            }
+            return render(request, 'workers/add.html', context)
+    else:
+        context = {
+            'theme': theme,
+        }
+        return render(request, 'workers/add.html', context)

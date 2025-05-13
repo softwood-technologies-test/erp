@@ -1,7 +1,7 @@
 from django.http import JsonResponse, HttpResponse, HttpRequest
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Q
 
 import pandas as pd
 
@@ -305,3 +305,45 @@ def getUnitsForGroup(request: HttpRequest, group: str):
         return JsonResponse(data, safe=False)
     else:
         return HttpResponse('Not allowed', status=405)
+
+@login_required(login_url='/login')
+def GetUsers(request: HttpRequest):
+    if request.method != 'GET':
+        return HttpResponse('Not Allowed', status=405)
+    
+    search = request.GET.get('search', '')
+
+    if search:
+        try:
+            search = int(search)
+            searchFilter = Q(id=search)
+        except:
+            searchFilter = Q(username__icontains=search)
+            searchFilter = searchFilter | Q(first_name__icontains=search)
+            searchFilter = searchFilter | Q(last_name__icontains=search)
+            searchFilter = searchFilter | Q(email__icontains=search)
+
+        users = User.objects.filter(searchFilter)
+    else:
+        users = User.objects.all()
+    
+    users = users[:15]
+
+    fields = ['id', 'first_name', 'last_name']
+    users = users.values(*fields)
+
+    if users:
+        dfUsers = pd.DataFrame(users)
+    else:
+        dfUsers = pd.DataFrame(columns=fields)
+    del users, fields
+
+    dfUsers['text'] = dfUsers['first_name'].astype(str)+' '+dfUsers['last_name'].astype(str)
+    dfUsers.rename(inplace=True, columns={'id': 'value'})
+    dfUsers.drop(inplace=True, columns=['first_name', 'last_name'])
+    
+    if dfUsers.empty:
+        return JsonResponse([], safe=False)
+    else:
+        users = dfUsers.to_dict(orient='records')
+        return JsonResponse(users, safe=False)

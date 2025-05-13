@@ -86,6 +86,7 @@ urlpatterns = [
     path('options/ordertypes', options_service.getOrderTypes, name='OrderTypes'),
     path('options/currencies', options_service.getCurrencies, name='CurrencyList'),
     path('options/merchants', options_service.getMerchandisers, name='merchantList'),
+    path('options/users', options_service.GetUsers, name='userList'),
     path('options/unit/<str:group>', options_service.getUnitsForGroup, name='unitsForGroup'),
     path('options/workorders', options_service.getWorkOrders, name='workOrders'),
     path('options/purchaseorders/open', options_service.getOpenPOs, name='openPOs'),

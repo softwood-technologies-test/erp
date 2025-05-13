@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 from apparelManagement.models import Department, StyleCard, WorkOrder
 
 class Operation(models.Model):
@@ -91,4 +92,23 @@ class Bundle(models.Model):
         indexes = [
             models.Index(fields=['Cut']),
             models.Index(fields=['Size']),
+        ]
+
+class Worker(models.Model):
+    WorkerCode = models.PositiveBigIntegerField(primary_key=True)
+    WorkerName = models.CharField(max_length=255)
+    FatherSpouseName = models.CharField(max_length=255, blank=True, null=True)
+    Department = models.ForeignKey(Department, on_delete=models.PROTECT, blank=True, null=True)
+    SubDepartment = models.CharField(max_length=31, blank=True, null=True)
+    CNIC = models.CharField(max_length=255, blank=True, null=True)
+    DateOfBirth = models.DateField(blank=True, null=True)
+    DateOfJoining = models.DateField(blank=True, null=True, auto_now_add=True)
+    Status = models.CharField(max_length=31)
+    Gender = models.CharField(max_length=7)
+    User = models.ForeignKey(User, on_delete=models.PROTECT, blank=True, null=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['Department']),
+            models.Index(fields=['Status']),
         ]

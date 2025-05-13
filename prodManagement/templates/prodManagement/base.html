@@ -63,6 +63,7 @@
               <li><a href="{% url 'styleBulletins' %}">Style Bulletin</a></li>
               <li><a href="{% url 'operations' %}">Operations</a></li>
               <li><a href="{% url 'machines' %}">Machines</a></li>
+              <li><a href="{% url 'workers' %}">Workers</a></li>
             </ul>
           </li>
           <li class="dropdown dropdown-hover">
@@ -418,6 +419,8 @@
 
     <script> //This function shows searchbox for a select element
       async function showSearchBox(source, url, nextFunction=null) {
+        const rect = source.getBoundingClientRect();
+
         source.style.display = 'none';
 
         const originalOptions = Array.from(source.options).map(option => ({
@@ -520,7 +523,15 @@
         });
 
         searchContainer.appendChild(listContainer);
-        source.parentNode.insertBefore(searchContainer, source.nextSibling);
+
+        searchContainer.style.left = `${rect.left}px`;
+        searchContainer.style.top = `${rect.bottom}px`;
+        searchContainer.style.width = `${rect.width}px`;
+        
+        source.parentNode.appendChild(searchContainer);
+        
+        //Bug: This doesn't work correctly.
+        //document.body.appendChild(searchContainer);
         searchInput.focus();
 
         function handleClickOutside(clickEvent) {
