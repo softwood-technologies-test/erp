@@ -6,75 +6,83 @@
 
 {% block content %}
     {% csrf_token %}
-    <p>
-        <div class="{{theme.border}}">
-            <div class="row g-3 {{theme.justify}} {{theme.align}}">
-                <form action="{% url 'pendingTrimAudit' %}" method="get" class="d-flex align-items-center">
-                    <div class="col {{theme.textJustify}}">
-                        <select id="workOrderFilter" name="workOrder" onchange="this.form.submit()" class="{{theme.dropdown}}">
-                            <option value="">  ---------  </option>
-                        </select>
-                    </div>
-                    <div class="col {{theme.textJustify}}">
-                        <input type="text" class="{{theme.textInput}}" name="searchTerm" placeholder="Search" value="{{searchTerm}}">
-                    </div>    
-                    <div class="col btn-group {{theme.textJustify}}">
-                        <button type="submit" class="{{theme.buttonBasic}}">Search</button>
-                        <a class="{{theme.buttonBasic}}" role="button" onclick="startAudit()">Start Audit</a>
-                    </div>
-                </form>
-                </div>
-            </div>
-        </div> 
-    </p> 
-    
-    <div id="ReceiptsTable">
-        <table class="{{theme.table}}">
-            <tr class = "{{theme.tableHead}}">
-                <th scope="col"><input class="form-check-input" type="checkbox" name="item_checkbox" onclick="selectAll(this)"></th>
-                <th scope="col">Receipt #</th>
-                <th scope="col">Date</th>
-                <th scope="col">Inventory</th>
-                <th scope="col">Supplier</th>
-                <th scope="col">Quantity</th>
-                <th scope="col">Work Order (3 only)</th>
+    <div class="{{theme.border}} bg-base-100 dark:bg-gray-900 p-4">
+    <form action="{% url 'pendingTrimAudit' %}" method="get" class="grid grid-cols-6 gap-2 items-center">
+        <!-- Work Order Dropdown -->
+        <div class="col-span-2">
+            <select id="workOrderFilter" name="workOrder" class="{{theme.dropdown}} w-full min-h-[2.5rem]">
+                <option value="">Work Order</option>
+            </select>
+        </div>
+
+        <!-- Search Input -->
+        <div class="col-span-2">
+            <input type="text" class="{{theme.textInput}} w-full min-h-[2.5rem]" name="searchTerm" placeholder="Search" value="{{searchTerm}}">
+        </div>
+
+        <!-- Buttons -->
+        <div class="col-span-2 flex gap-2 justify-end">
+            <button type="submit" class="bg-primary text-white min-h-[2.5rem] px-4 py-2 rounded hover:bg-primary/90 w-full">
+                Search
+            </button>
+            <a role="button" onclick="startAudit()" class="bg-secondary text-white min-h-[2.5rem] px-4 py-2 rounded hover:bg-secondary/90 w-full text-center cursor-pointer">
+                Start Audit
+            </a>
+        </div>
+    </form>
+</div>
+
+<div id="ReceiptsTable">
+    <table class="{{theme.table}}">
+        <tr class="{{theme.tableHead}}">
+            <th scope="col"><input class="form-check-input" type="checkbox" name="item_checkbox" onclick="selectAll(this)"></th>
+            <th scope="col">Receipt #</th>
+            <th scope="col">Date</th>
+            <th scope="col">Inventory</th>
+            <th scope="col">Supplier</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">Work Order (3 only)</th>
+        </tr>
+        <tbody id="tableData" class="{{theme.tableBody}}">
+            {% for data in inv %}
+            <tr>
+                <td><input class="form-check-input" type="checkbox" name="item_checkbox"></td>
+                <td class="receipt">{{ data.ReceiptNumber }}</td>
+                <td class="invRecId" hidden>{{ data.RecInvId }}</td>
+                <td>{{ data.ReceiptDate }}</td>
+                <td>{{ data.Name }}</td>
+                <td>{{ data.Supplier }}</td>
+                <td>{{ data.Quantity }}</td>
+                <td>{{ data.WorkOrder }}</td>
             </tr>
-            <tbody id="tableData" class = "{{theme.tableBody}}">
-                {% for data in inv %}
-                <tr>
-                    <td><input class="form-check-input" type="checkbox" name="item_checkbox"></td>
-                    <td class="receipt">{{ data.ReceiptNumber }}</td>
-                    <td class="invRecId" hidden>{{ data.RecInvId }}</td>
-                    <td>{{ data.ReceiptDate }}</td>
-                    <td>{{ data.Name }}</td>
-                    <td>{{ data.Supplier }}</td>
-                    <td>{{ data.Quantity }}</td>
-                    <td>{{ data.WorkOrder }}</td>
-                </tr>
-                {% endfor %}                    
-            </tbody>
-        </table>
-    </div>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
-    <script>    //To run when the page loads
-        window.addEventListener('load', async () => {
-            //Show loading icon to users
-            showLoadingIcon();
+<script>
+    window.addEventListener('load', async () => {
+        showLoadingIcon();
 
-            response = await fetch('/options/workorders');
-            const workOrders = await response.json();
-            await appendOptions('workOrderFilter', workOrders, '{{workOrder}}');
+        const response = await fetch('/options/workorders');
+        const workOrders = await response.json();
 
-            //Since this dropdown is not part of a table, we need manually apply search box
-            $("#workOrderFilter").chosen({
-                search_contains: true,
-                width: "100%"
-            });
+        const workOrderSelect = document.getElementById('workOrderFilter');
+        workOrderSelect.onchange = null; // Disable onchange during population
+        await appendOptions('workOrderFilter', workOrders, '{{workOrder}}');
+        workOrderSelect.onchange = function () {
+            this.form.submit();
+        };
 
-            //Remove loading animation
-            hideLoadingIcon();
+        $("#workOrderFilter").chosen({
+            search_contains: true,
+            width: "100%"
         });
-    </script>
+
+        hideLoadingIcon();
+    });
+</script>
+
 
     <script>    //Start Audit Button
         async function startAudit() {
