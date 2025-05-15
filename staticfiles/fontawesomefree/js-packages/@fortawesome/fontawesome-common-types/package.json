@@ -20,7 +20,9 @@
   "engines": {
     "node": ">=6"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@fortawesome/fontawesome-common-types": "file:"
+  },
   "version": "6.5.1",
   "name": "@fortawesome/fontawesome-common-types",
   "license": "MIT",
