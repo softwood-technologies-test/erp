@@ -229,8 +229,15 @@ def GetPendingAudits(workOrder: int):
     receipts = appModels.InventoryReciept.objects.filter(id__in=dfReceiptInventories['ReceiptNumber'].to_list()).values(*fields)
     dfReceipts = pd.DataFrame(receipts) if receipts else pd.DataFrame(columns=fields)
 
-    fields = ['RecInvId', 'WorkOrder']
-    receiptAllocations = appModels.RecAllocation.objects.filter(RecInvId__in=dfReceiptInventories['id'].to_list()).values(*fields)
+    fields = ['RecInvId','WorkOrder']
+
+    # Handle missing or null RecInvId by filling with 'id' from receipt inventories
+    # (only do this if 'RecInvId' column exists or add it manually if not)
+    # Since RecInvId is coming from RecAllocation, we do this after merge below.
+    receiptAllocations = appModels.RecAllocation.objects.filter(
+        RecInvId__in=[x for x in dfReceiptInventories['id'].dropna().tolist() if str(x).isdigit()]
+    ).values(*fields)
+
     dfReceiptAllocations = pd.DataFrame(receiptAllocations) if receiptAllocations else pd.DataFrame(columns=fields)
 
     fields = ['Code', 'Name', 'AuditReq']
@@ -247,6 +254,13 @@ def GetPendingAudits(workOrder: int):
 
     # Merge with allocation
     dfReceiptInventories = pd.merge(dfReceiptInventories, dfReceiptAllocations, left_on='id', right_on='RecInvId', how='left')
+
+    # Now fill null/NaN RecInvId with the 'id' from dfReceiptInventories (as fallback)
+    dfReceiptInventories['RecInvId'] = dfReceiptInventories['RecInvId'].fillna(dfReceiptInventories['id'])
+
+    # Ensure RecInvId is numeric, else drop those rows (to avoid invalid id errors)
+    dfReceiptInventories = dfReceiptInventories[dfReceiptInventories['RecInvId'].apply(lambda x: str(x).isdigit())]
+
     dfReceiptInventories.rename(columns={'id': 'RecInventoryId'}, inplace=True)  # rename to avoid confusion
 
     # Merge with receipts
@@ -272,6 +286,7 @@ def GetPendingAudits(workOrder: int):
     }).reset_index()
 
     return dfReceiptInventories.to_dict(orient='records')
+
 
 
 def PrepareDataForAudit (dfRecInvIds: pd.DataFrame):
