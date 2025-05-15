@@ -63,19 +63,29 @@ def GetReceiptList(searchTerm: str, supplier: str, receiptNumber: int):
     if dfReceipts.empty:
         return []
     
-    inventories = models.RecInventory.objects.filter(ReceiptNumber__in=dfReceipts['id'].to_list())
-    inventories = inventories.values('id','ReceiptNumber','InventoryCode')
-    dfInventories = pd.DataFrame(inventories)
+    fields = ['id','ReceiptNumber','InventoryCode']
+    inventories = models.RecInventory.objects.filter(ReceiptNumber__in=dfReceipts['id'].to_list()).values(*fields)
+
+    if inventories:
+        dfInventories = pd.DataFrame(inventories)
+    else:
+        dfInventories = pd.DataFrame(coloumns=fields)
     del inventories
 
-    allocations = models.RecAllocation.objects.filter(RecInvId__in=dfInventories['id'].to_list())
-    allocations = allocations.values('RecInvId','WorkOrder')
-    dfAllocations = pd.DataFrame(allocations)
+    fields = ['RecInvId','WorkOrder']
+    allocations = models.RecAllocation.objects.filter(RecInvId__in=dfInventories['id'].to_list()).values(*fields)
+    if allocations:
+        dfAllocations = pd.DataFrame(allocations)
+    else:
+        dfAllocations = pd.DataFrame(columns=fields)
     del allocations
 
-    inventoryCards = models.Inventory.objects.filter(Code__in=dfInventories['InventoryCode'].to_list())
-    inventoryCards = inventoryCards.values('Code','Name')
-    dfInventoryCards = pd.DataFrame(inventoryCards)
+    fields = ['Code','Name']
+    inventoryCards = models.Inventory.objects.filter(Code__in=dfInventories['InventoryCode'].to_list()).values(*fields)
+    if inventoryCards:
+        dfInventoryCards = pd.DataFrame(inventoryCards)
+    else:
+        dfInventoryCards = pd.DataFrame(columns=fields)    
     del inventoryCards
 
     #Give verbose names to the id columns

@@ -2,115 +2,122 @@
 
 {% block title %}
     Trim Audit History
-{% endblock title %}
+{% endblock %}
 
 {% block content %}
-    <div class="{{theme.border}} bg-base-100 dark:bg-gray-900 p-4">
+<div class="border border-black rounded bg-base-100 dark:bg-gray-900 p-4">
     <form action="{% url 'trimAudit' %}" method="get" class="grid grid-cols-6 gap-2 items-center">
         <!-- Supplier Dropdown -->
         <div class="col-span-1">
-            <select id="supplierFilter" name="supplier" onchange="this.form.submit()" class="{{theme.dropdown}} w-full min-h-[2.5rem]">
-                <option disabled selected>Supplier</option>
+            <select id="supplierFilter" name="supplier" class="form-select form-select-sm rounded text-center border border-black w-full min-h-[2.5rem]">
+                <option value="">Supplier</option>
             </select>
         </div>
 
         <!-- Inventory Dropdown -->
         <div class="col-span-1">
-            <select id="inventoryFilter" name="inventory" onchange="this.form.submit()" class="{{theme.dropdown}} w-full min-h-[2.5rem]">
-                <option disabled selected>Inventory</option>
+            <select id="inventoryFilter" name="inventory" class="form-select form-select-sm rounded text-center border border-black w-full min-h-[2.5rem]">
+                <option value="">Inventory</option>
             </select>
         </div>
 
         <!-- Start Date -->
         <div class="col-span-1">
-            <input id="startDate" type="text" name="startDate" placeholder="Start Date"
-                value="{{startDate|date:'m/d/Y'}}" class="{{theme.textInput}} w-full min-h-[2.5rem]" autocomplete="off">
+            <input type="date" id="startDate" name="startDate" value="{{ startDate|date:'Y-m-d' }}" class="form-control form-control-sm rounded text-center border border-black w-full min-h-[2.5rem]">
         </div>
 
         <!-- End Date -->
         <div class="col-span-1">
-            <input id="endDate" type="text" name="endDate" placeholder="End Date"
-                value="{{endDate}}" class="{{theme.textInput}} w-full min-h-[2.5rem]" autocomplete="off">
+            <input type="date" id="endDate" name="endDate" value="{{ endDate|date:'Y-m-d' }}" class="form-control form-control-sm rounded text-center border border-black w-full min-h-[2.5rem]">
         </div>
 
         <!-- Approval Dropdown -->
         <div class="col-span-1">
-            <select name="approval" onchange="this.form.submit()" class="{{theme.dropdown}} w-full min-h-[2.5rem]">
-                <option value="false" {% if approval == False %} selected {% endif %}>Rejected</option>
-                <option value="true" {% if approval == True %} selected {% endif %}>Approved</option>
-                <option value="null" {% if approval == None %} selected {% endif %}>All</option>
+            <select name="approval" class="form-select form-select-sm rounded text-center border border-black w-full min-h-[2.5rem]">
+                <option value="null" {% if approval == None %}selected{% endif %}>All</option>
+                <option value="true" {% if approval == True %}selected{% endif %}>Approved</option>
+                <option value="false" {% if approval == False %}selected{% endif %}>Rejected</option>
             </select>
         </div>
 
         <!-- Filter Button -->
-        <div class="col-span-1 flex justify-center">
-            <button type="submit"
-                class="bg-primary text-white w-full min-h-[2.5rem] px-4 py-2 rounded hover:bg-primary/90">
+        <div class="col-span-1 flex justify-end">
+            <button type="submit" class="btn btn-lg bg-black text-white hover:opacity-90 w-full min-h-[2.5rem] px-4 py-2 rounded">
                 Filter
             </button>
         </div>
     </form>
 </div>
 
+<div id="AuditsTable" class="mt-4 border border-black rounded bg-base-100 dark">
+    <table class="table-auto w-full border border-black text-center align-middle text-sm">
+        <thead class="bg-black text-white">
+            <tr>
+                <th class="border border-black p-2">Receipt Date</th>
+                <th class="border border-black p-2">Receipt #</th>
+                <th class="border border-black p-2">Name</th>
+                <th class="border border-black p-2">Supplier</th>
+                <th class="border border-black p-2">Approval</th>
+                <th class="border border-black p-2">Comments</th>
+            </tr>
+        </thead>
+        <tbody class="even:bg-gray-100 odd:bg-white">
+            {% for data in audits %}
+            <tr class="border border-black">
+                <td class="border border-black p-2">{{ data.ReceiptDate }}</td>
+                <td class="border border-black p-2">
+                    <a href="/trims/audit/{{ data.RecInventory }}/edit" class="text-blue-600 hover:underline">
+                        {{ data.ReceiptNumber }}
+                    </a>
+                </td>
+                <td class="border border-black p-2">{{ data.Name }}</td>
+                <td class="border border-black p-2">{{ data.Supplier }}</td>
+                <td class="border border-black p-2">
+                    {% if data.Approval %}
+                        <span class="text-green-600 font-semibold">Approved</span>
+                    {% else %}
+                        <span class="text-red-600 font-semibold">Rejected</span>
+                    {% endif %}
+                </td>
+                <td class="border border-black p-2">{{ data.QualityComments }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
+<script>
+    window.addEventListener('load', async () => {
+        showLoadingIcon();
 
-    <div id="AuditsTable" class="mt-4 {{theme.border}} bg-base-100 dark:bg-gray-900 p-4">
-        <table class="{{theme.table}} w-full">
-            <thead class="{{theme.tableHead}}">
-                <tr>
-                    <th scope="col">Receipt Date</th>
-                    <th scope="col">Receipt #</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Supplier</th>
-                    <th scope="col">Approval</th>
-                    <th scope="col">Comments</th>
-                </tr>
-            </thead>
-            <tbody id="tableData" class="{{theme.tableBody}}">
-                {% for data in audits %}
-                <tr class="{{theme.tableBodyRow}}">
-                    <td>{{ data.ReceiptDate }}</td>
-                    <td><a href="/trims/audit/{{ data.RecInventory }}/edit" class="{{theme.hyperLink}}">{{ data.ReceiptNumber }}</a></td>
-                    <td>{{ data.Name }}</td>
-                    <td>{{ data.Supplier }}</td>
-                    <td>
-                        {% if data.Approval %}
-                            <span class="{{theme.trueClass}}">{{theme.trueValue}}</span>
-                        {% else %}
-                            <span class="{{theme.falseClass}}">{{theme.falseValue}}</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ data.QualityComments }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+        const supplierRes = await fetch('/options/suppliers');
+        const suppliers = await supplierRes.json();
+        await appendOptions('supplierFilter', suppliers, '{{ supplier }}');
 
-    <script>
-        window.addEventListener('load', async () => {
-            showLoadingIcon();
+        const inventoryRes = await fetch('/options/inventories?group=Trim');
+        const inventories = await inventoryRes.json();
+        await appendOptions('inventoryFilter', inventories, '{{ inventory }}');
 
-            let response = await fetch('/options/suppliers');
-            const suppliers = await response.json();
-            await appendOptions('supplierFilter', suppliers, '{{supplier}}');
-            $("#supplierFilter").chosen({
-                search_contains: true,
-                width: "100%"
-            });
+        $("#supplierFilter").chosen({ search_contains: true, width: "100%" });
+        $("#inventoryFilter").chosen({ search_contains: true, width: "100%" });
 
-            response = await fetch('/options/inventories?group=Trim');
-            const inventories = await response.json();
-            await appendOptions('inventoryFilter', inventories, '{{inventory}}');
-            $("#inventoryFilter").chosen({
-                search_contains: true,
-                width: "100%"
-            });
+        hideLoadingIcon();
+    });
 
-            hideLoadingIcon();
-        });
+    async function appendOptions(selectId, items, selectedValue) {
+        const select = document.getElementById(selectId);
+        select.innerHTML += items.map(item => {
+            const selected = item === selectedValue ? 'selected' : '';
+            return `<option value="${item}" ${selected}>${item}</option>`;
+        }).join('');
+    }
 
-        $('#startDate').datepicker();
-        $('#endDate').datepicker();
-    </script>
-{% endblock content %}
+    function showLoadingIcon() {
+        // Optional spinner
+    }
+
+    function hideLoadingIcon() {
+        // Optional hide
+    }
+</script>
+{% endblock %}

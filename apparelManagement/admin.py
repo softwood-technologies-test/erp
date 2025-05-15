@@ -20,6 +20,25 @@ class UnitAdmin(admin.ModelAdmin):
     list_filter = ('Group',)
     ordering = ['Group','Name']
 
+@admin.register(models.PurchaseOrder)
+class POAdmin(admin.ModelAdmin):
+    list_display = ('Supplier', 'OrderDate')
+    list_filter = ('Supplier',)
+    ordering = ('id',)
+
+@admin.register(models.POInventory)
+class POInvAdmin(admin.ModelAdmin):
+    list_display = ('PONumber', 'Inventory')
+    list_filter = ('PONumber',)
+    ordering = ('PONumber',)
+
+
+@admin.register(models.WorkOrder)
+class WorkOrders(admin.ModelAdmin):
+    list_display = ('OrderNumber', 'Merchandiser')
+    list_filter = ('OrderNumber',)
+    ordering = ('OrderNumber',)
+
 """ @admin.register(models.Currency)
 class CurrencyAdmin(admin.ModelAdmin):
     list_display = ('Code', 'Name') """

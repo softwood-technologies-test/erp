@@ -34,12 +34,12 @@ def TrimsAudit (request: HttpRequest):
         endDate = None
 
     if startDate:
-        startDate = datetime.strptime(startDate, '%m/%d/%Y').date()
+        startDate = datetime.strptime(startDate, '%Y-%m-%d').date()
     else:
         startDate = datetime(datetime.now().year, 1, 1).date()
     
     if endDate:
-        endDate = datetime.strptime(endDate, '%m/%d/%Y').date()
+        endDate = datetime.strptime(endDate, '%Y-%m-%d').date()
     else:
         endDate = None
     

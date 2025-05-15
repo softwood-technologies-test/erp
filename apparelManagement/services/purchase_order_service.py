@@ -322,27 +322,44 @@ def GetOrderList(searchTerm: str, supplier: str, poNumber: int):
     else:
         orders = models.PurchaseOrder.objects.all()
     
-    orders = orders.values('id','OrderDate','DeliveryDate','Supplier')
-    dfOrders = pd.DataFrame(orders)
+    fields = ['id','OrderDate','DeliveryDate','Supplier']
+    orders = orders.values(*fields)
+    
+    if orders:
+        dfOrders = pd.DataFrame(orders)
+    else:
+        dfOrders = pd.DataFrame(columns=fields)    
     del orders
 
     if dfOrders.empty:
         return []
 
-    inventories = models.POInventory.objects.filter(PONumber__in=dfOrders['id'].to_list())
-    inventories = inventories.values('id','PONumber','Inventory')
-    dfInventories = pd.DataFrame(inventories)
+    fields = ['id','PONumber','Inventory']
+    inventories = models.POInventory.objects.filter(PONumber__in=dfOrders['id'].to_list()).values(*fields)
+    
+    if inventories:
+        dfInventories = pd.DataFrame(inventories)
+    else:
+        dfInventories = pd.DataFrame(columns=fields)
     del inventories
 
-    allocations = models.POAllocation.objects.filter(POInvId__in=dfInventories['id'].to_list())
-    allocations = allocations.values('POInvId','WorkOrder')
-    dfAllocations = pd.DataFrame(allocations)
+    fields = ['POInvId','WorkOrder']
+    allocations = models.POAllocation.objects.filter(POInvId__in=dfInventories['id'].to_list()).values(*fields)
+    
+    if allocations:
+        dfAllocations = pd.DataFrame(allocations)
+    else:
+        dfAllocations = pd.DataFrame(columns=fields)
     del allocations
 
-    inventoryCards = models.Inventory.objects.filter(Code__in=dfInventories['Inventory'].to_list())
-    inventoryCards = inventoryCards.values('Code','Name')
-    dfInventoryCards = pd.DataFrame(inventoryCards)
-    del inventoryCards
+    fields = ['Code','Name']
+    inventoryCards = models.Inventory.objects.filter(Code__in=dfInventories['Inventory'].to_list()).values(*fields)
+    
+    if inventoryCards:
+        dfInventoryCards = pd.DataFrame(inventoryCards)
+    else:
+        dfInventoryCards = pd.DataFrame(columns=fields)
+    del inventoryCards, fields
     
     #Give verbose names to the id columns
     dfOrders.rename(inplace=True, columns={'id':'PONumber'})
