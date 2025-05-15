@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-gn+q6*fm^f@8mh2+ny!6^#i-%iko@i87#0vgrn2e7mbn(rhiv%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.2.247', '206.42.124.10']
+ALLOWED_HOSTS = ['192.168.2.15', '206.42.124.10']
 
 
 # Application definition
@@ -48,8 +48,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'import_export',
-    'tempus_dominus',
-    'fontawesomefree',
     'django_countries',
 ]
 
@@ -96,17 +94,18 @@ WSGI_APPLICATION = 'erp.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'mssql',
-        'NAME': 'erp',
-        'HOST': 'localhost',
-        'PORT': '1433',
-        'USER': 'sa',
-        'PASSWORD': 'Softwood@ATT1',
-        'OPTIONS': {
-                'driver': 'ODBC Driver 17 for SQL Server',
-            },
-    }
+    "default": {
+        "ENGINE": "mssql",
+        "NAME": "ERP",
+        "USER": "sa",
+        "PASSWORD": "Softwood@FOS123",
+        "HOST": "localhost",
+        "PORT": "1433",
+        "OPTIONS": {
+            "driver": "ODBC Driver 18 for SQL Server", 
+            'extra_params': 'Encrypt=yes;TrustServerCertificate=yes',
+        },
+    },
 }
 
 
@@ -165,9 +164,9 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False     #Don't delete cookies upon browser c
 SESSION_SAVE_EVERY_REQUEST = True # "False" by default
 
 #Settings for emails
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+"""EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'softwoodplayground@gmail.com'
-EMAIL_HOST_PASSWORD = 'yiwn adym noin zwgx'
+EMAIL_HOST_PASSWORD = 'yiwn adym noin zwgx'"""
