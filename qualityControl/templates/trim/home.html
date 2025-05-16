@@ -32,40 +32,43 @@
         </form>
     </div>
 
-    <div id="ReceiptsTable" class="mt-4">
-        <table class="table-auto w-full border border-black text-center align-middle">
-            <thead class="bg-black text-white">
-                <tr>
-                    <th class="border border-black p-2">
-                        <input type="checkbox" class="form-check-input border border-black" onclick="selectAll(this)">
-                    </th>
-                    <th class="border border-black p-2">Receipt #</th>
-                    <th class="border border-black p-2">Date</th>
-                    <th class="border border-black p-2">Inventory</th>
-                    <th class="border border-black p-2">Supplier</th>
-                    <th class="border border-black p-2">Quantity</th>
-                    <th class="border border-black p-2">Work Order (3 only)</th>
-                </tr>
-            </thead>
-            <tbody id="tableData" class="even:bg-white-100 odd:bg-white">
-                {% for data in inv %}
-                <tr class="border border-black">
-                    <td class="p-2 border border-black">
-                        <input class="form-check-input border border-black" type="checkbox" name="item_checkbox">
-                    </td>
-                    <td class="receipt border border-black p-2">{{ data.ReceiptNumber }}</td>
-                    <td class="invRecId border border-black p-2" hidden>{{ data.RecInvId }}</td>
-                    <td class="border border-black p-2">{{ data.ReceiptDate }}</td>
-                    <td class="border border-black p-2">{{ data.Name }}</td>
-                    <td class="border border-black p-2">{{ data.Supplier }}</td>
-                    <td class="border border-black p-2">{{ data.Quantity }}</td>
-                    <td class="border border-black p-2">{{ data.WorkOrder }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
+    <table class="{{ theme.table }} w-full">
+    <thead class="{{ theme.tableHead }}">
+        <tr>
+            <th class="{{ theme.textJustify }}">
+                <input type="checkbox" class="{{ theme.checkbox }}" onclick="selectAll(this)">
+            </th>
+            <th>Receipt #</th>
+            <th>Date</th>
+            <th>Inventory</th>
+            <th>Supplier</th>
+            <th>Quantity</th>
+            <th>Work Order</th>
+        </tr>
+    </thead>
+    <tbody id="tableData" class="{{ theme.tableBody }}">
+        {% for data in inv %}
+        <tr>
+            <td class="{{ theme.textJustify }}">
+                <input class="{{ theme.checkbox }}" type="checkbox" 
+                       name="item_checkbox" value="{{ data.RecInventoryId }}">
+            </td>
+            <td>{{ data.ReceiptNumber }}</td>
+            <td>{{ data.ReceiptDate|date:"Y-m-d" }}</td>
+            <td>{{ data.Name }}</td>
+            <td>{{ data.Supplier }}</td>
+            <td>{{ data.Quantity }}</td>
+            <td>{{ data.WorkOrder }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7" class="{{ theme.textJustify }} py-4">
+                No pending audits found
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
     <script>
         window.addEventListener('load', async () => {
             showLoadingIcon();
@@ -92,7 +95,8 @@
             const data = {};
             for (let i = 0; i < rows.length; i++) {
                 const checked = Boolean(rows[i].children[0].children[0].checked);
-                const receiptInvNumber = rows[i].children[2].textContent;
+                const receiptInvNumber = rows[i].querySelector('input[type="checkbox"]').value;
+
 
                 if (checked) {
                     data[`data_receiptInvNumber_${i + 1}`] = receiptInvNumber;

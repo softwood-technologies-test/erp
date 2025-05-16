@@ -39,6 +39,12 @@ class WorkOrders(admin.ModelAdmin):
     list_filter = ('OrderNumber',)
     ordering = ('OrderNumber',)
 
+@admin.register(models.RecAllocation)
+class RecAllocation(admin.ModelAdmin):
+    list_display = ('RecInvId', 'WorkOrder')
+    list_filter = ('RecInvId',)
+    ordering = ('RecInvId',)
+
 """ @admin.register(models.Currency)
 class CurrencyAdmin(admin.ModelAdmin):
     list_display = ('Code', 'Name') """

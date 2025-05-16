@@ -73,10 +73,11 @@ def TrimsAudit (request: HttpRequest):
 @login_required(login_url='/login')
 def PendingTrimsAudit (request: HttpRequest):
     if request.method == 'POST':
-        #Convert the json to a dict
         jsonData = json.loads(request.body.decode('utf-8'))
+        print("Received JSON:", jsonData)  # 🪵 Log raw data
 
         dfData = refineJson(jsonData)
+        print("Refined DataFrame:\n", dfData)  # 🪵 Log refined DataFrame
 
         try:
             data, checkListOptions = trim_audit_service.PrepareDataForAudit(dfData)
@@ -86,7 +87,7 @@ def PendingTrimsAudit (request: HttpRequest):
             }
             return render(request,'trim/audit.html', context)
         except Exception as e:
-            print(e)
+            print("Audit Error:", e)
             return HttpResponse(e, status=400)
     else:
         searchTerm = request.GET.get('searchTerm', '')

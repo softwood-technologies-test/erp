@@ -144,149 +144,201 @@ def GetAuditHistory (supplier: str, inventory: str, approval: bool, startDate: s
     data = [dict(zip(cols, i)) for i in dfTrimAudits.values]
     return data
 
-# def GetPendingAudits (workOrder: int):
-#     '''
-#     Get all inventories whose audits are not done yet. If order number is provided, then filter data based on that
-#     '''
-#     fields = ['id','ReceiptNumber','InventoryCode','Variant','Quantity']
-#     receiptInventories = appModels.RecInventory.objects.filter(Approval=False).filter(QualityComments=None).values(*fields)
-#     if receiptInventories:
-#         dfReceiptInventories = pd.DataFrame(receiptInventories)
-#     else:
-#         return []
-#     del receiptInventories
-
-
-#     fields = ['id','ReceiptDate','Supplier']
-#     receipts = appModels.InventoryReciept.objects.filter(id__in=dfReceiptInventories['ReceiptNumber'].to_list()).values(*fields)
-#     if receipts:
-#         dfReceipts = pd.DataFrame(receipts)
-#     else:
-#         dfReceipts = pd.DataFrame(columns=fields)
-#     del receipts
-
-#     fields = ['RecInvId','WorkOrder']
-#     receiptAllocations = appModels.RecAllocation.objects.filter(RecInvId__in=dfReceiptInventories['id'].to_list()).values(*fields)
-#     if receiptAllocations:
-#         dfReceiptAllocaitons = pd.DataFrame(receiptAllocations)
-#     else:
-#         dfReceiptAllocaitons = pd.DataFrame(columns=fields)
-#     del receiptAllocations
-
-#     fields = ['Code','Name','AuditReq']
-#     inventories = appModels.Inventory.objects.filter(Code__in=dfReceiptInventories['InventoryCode'].to_list()).values(*fields)
-#     if inventories:
-#         dfInventories = pd.DataFrame(inventories)
-#     else:
-#         dfInventories = pd.DataFrame(columns=fields)
-#     del inventories 
-    
-#     dfReceiptInventories = pd.merge(left=dfReceiptInventories, right=dfInventories, left_on='InventoryCode', right_on='Code', how='left')
-#     del dfInventories
-#     dfReceiptInventories.drop(inplace=True, columns=['InventoryCode','Code'])
-    
-#     dfReceiptInventories = dfReceiptInventories[dfReceiptInventories['AuditReq'] == True]
-#     dfReceiptInventories.drop(inplace=True, columns=['AuditReq'])
-    
-#     dfReceiptInventories = pd.merge(left=dfReceiptInventories, right=dfReceiptAllocaitons, left_on='id', right_on='RecInvId', how='left')
-#     del dfReceiptAllocaitons
-#     dfReceiptInventories.drop(inplace=True, columns=['id'])
-
-#     dfReceiptInventories = pd.merge(left=dfReceiptInventories, right=dfReceipts, left_on='ReceiptNumber', right_on='id', how='left')
-#     del dfReceipts
-#     dfReceiptInventories.drop(inplace=True, columns=['id'])
-
-#     dfReceiptInventories['Name'] = np.where(dfReceiptInventories['Variant'].str.len() == 0, dfReceiptInventories['Name'],
-#                                             dfReceiptInventories['Name'].astype(str)+' - '+dfReceiptInventories['Variant'])
-#     dfReceiptInventories.drop(inplace=True, columns=['Variant'])
-
-#     #Apply the work order filter
-#     if workOrder:
-#         dfReceiptInventories = dfReceiptInventories[dfReceiptInventories['WorkOrder']==int(workOrder)]
-
-#     dfReceiptInventories = dfReceiptInventories.groupby(['ReceiptNumber','RecInvId','Name']).agg({
-#         'ReceiptDate': 'first',
-#         'Supplier': 'first',
-#         'Quantity': 'first',
-#         'WorkOrder': concatenateValues,
-#     }).reset_index()
-
-#     cols = [i for i in dfReceiptInventories]
-#     data = [dict(zip(cols, i)) for i in dfReceiptInventories.values]
-#     return data
 
 def GetPendingAudits(workOrder: int):
     '''
     Get all inventories whose audits are not done yet. If order number is provided, then filter data based on that.
     '''
     fields = ['id', 'ReceiptNumber', 'InventoryCode', 'Variant', 'Quantity']
-    receiptInventories = appModels.RecInventory.objects.filter(Approval=False, QualityComments=None).values(*fields)
-    if not receiptInventories:
+    receiptInventories = appModels.RecInventory.objects.filter(
+        Approval=False, QualityComments=None
+    ).values(*fields)
+    if receiptInventories:
+        dfReceiptInventories = pd.DataFrame(receiptInventories)
+    else:
         return []
-    dfReceiptInventories = pd.DataFrame(receiptInventories)
+    del receiptInventories
 
     fields = ['id', 'ReceiptDate', 'Supplier']
-    receipts = appModels.InventoryReciept.objects.filter(id__in=dfReceiptInventories['ReceiptNumber'].to_list()).values(*fields)
-    dfReceipts = pd.DataFrame(receipts) if receipts else pd.DataFrame(columns=fields)
-
-    fields = ['RecInvId','WorkOrder']
-
-    # Handle missing or null RecInvId by filling with 'id' from receipt inventories
-    # (only do this if 'RecInvId' column exists or add it manually if not)
-    # Since RecInvId is coming from RecAllocation, we do this after merge below.
-    receiptAllocations = appModels.RecAllocation.objects.filter(
-        RecInvId__in=[x for x in dfReceiptInventories['id'].dropna().tolist() if str(x).isdigit()]
+    receipts = appModels.InventoryReciept.objects.filter(
+        id__in=dfReceiptInventories['ReceiptNumber'].to_list()
     ).values(*fields)
+    if receipts:
+        dfReceipts = pd.DataFrame(receipts)
+    else:
+        dfReceipts = pd.DataFrame(columns=fields)
+    del receipts
+    # Rename to avoid id collision
+    dfReceipts.rename(columns={'id': 'ReceiptId'}, inplace=True)
 
-    dfReceiptAllocations = pd.DataFrame(receiptAllocations) if receiptAllocations else pd.DataFrame(columns=fields)
+    fields = ['RecInvId', 'WorkOrder']
+    receiptAllocations = appModels.RecAllocation.objects.filter(
+        RecInvId__in=dfReceiptInventories['id'].to_list()
+    ).values(*fields)
+    if receiptAllocations:
+        dfReceiptAllocations = pd.DataFrame(receiptAllocations)
+    else:
+        dfReceiptAllocations = pd.DataFrame(columns=fields)
+    del receiptAllocations
 
     fields = ['Code', 'Name', 'AuditReq']
-    inventories = appModels.Inventory.objects.filter(Code__in=dfReceiptInventories['InventoryCode'].to_list()).values(*fields)
-    dfInventories = pd.DataFrame(inventories) if inventories else pd.DataFrame(columns=fields)
+    inventories = appModels.Inventory.objects.filter(
+        Code__in=dfReceiptInventories['InventoryCode'].to_list()
+    ).values(*fields)
+    if inventories:
+        dfInventories = pd.DataFrame(inventories)
+    else:
+        dfInventories = pd.DataFrame(columns=fields)
+    del inventories
 
-    # Merge with inventory master
-    dfReceiptInventories = pd.merge(dfReceiptInventories, dfInventories, left_on='InventoryCode', right_on='Code', how='left')
+    # Merge inventory master
+    dfReceiptInventories = pd.merge(
+        left=dfReceiptInventories, right=dfInventories,
+        left_on='InventoryCode', right_on='Code', how='left'
+    )
+    del dfInventories
     dfReceiptInventories.drop(columns=['InventoryCode', 'Code'], inplace=True)
 
-    # Filter only audit-required items
+    # Filter audit required only
     dfReceiptInventories = dfReceiptInventories[dfReceiptInventories['AuditReq'] == True]
     dfReceiptInventories.drop(columns=['AuditReq'], inplace=True)
 
-    # Merge with allocation
-    dfReceiptInventories = pd.merge(dfReceiptInventories, dfReceiptAllocations, left_on='id', right_on='RecInvId', how='left')
+    # Merge with allocations
+    dfReceiptInventories = pd.merge(
+        left=dfReceiptInventories, right=dfReceiptAllocations,
+        left_on='id', right_on='RecInvId', how='left'
+    )
+    del dfReceiptAllocations
 
-    # Now fill null/NaN RecInvId with the 'id' from dfReceiptInventories (as fallback)
-    dfReceiptInventories['RecInvId'] = dfReceiptInventories['RecInvId'].fillna(dfReceiptInventories['id'])
-
-    # Ensure RecInvId is numeric, else drop those rows (to avoid invalid id errors)
-    dfReceiptInventories = dfReceiptInventories[dfReceiptInventories['RecInvId'].apply(lambda x: str(x).isdigit())]
-
-    dfReceiptInventories.rename(columns={'id': 'RecInventoryId'}, inplace=True)  # rename to avoid confusion
+    # Rename 'id' in dfReceiptInventories to avoid confusion before dropping RecInvId column
+    dfReceiptInventories.rename(columns={'id': 'RecInventoryId'}, inplace=True)
+    dfReceiptInventories.drop(columns=['RecInvId'], inplace=True)
 
     # Merge with receipts
-    dfReceiptInventories = pd.merge(dfReceiptInventories, dfReceipts, left_on='ReceiptNumber', right_on='id', how='left')
-    dfReceiptInventories.rename(columns={'id': 'ReceiptId'}, inplace=True)  # rename to avoid conflict
+    dfReceiptInventories = pd.merge(
+        left=dfReceiptInventories, right=dfReceipts,
+        left_on='ReceiptNumber', right_on='ReceiptId', how='left'
+    )
+    del dfReceipts
+    dfReceiptInventories.drop(columns=['ReceiptId'], inplace=True)
 
-    # Merge variant name
-    dfReceiptInventories['Name'] = np.where(dfReceiptInventories['Variant'].str.len() == 0,
-                                            dfReceiptInventories['Name'],
-                                            dfReceiptInventories['Name'].astype(str) + ' - ' + dfReceiptInventories['Variant'])
+    # Combine variant with name
+    dfReceiptInventories['Name'] = np.where(
+        dfReceiptInventories['Variant'].str.len() == 0,
+        dfReceiptInventories['Name'],
+        dfReceiptInventories['Name'].astype(str) + ' - ' + dfReceiptInventories['Variant']
+    )
     dfReceiptInventories.drop(columns=['Variant'], inplace=True)
 
-    # Apply work order filter
+    # Fill missing WorkOrder with empty string for filtering
+    dfReceiptInventories['WorkOrder'] = dfReceiptInventories['WorkOrder'].fillna('')
+
+    # Apply work order filter if provided
     if workOrder:
         dfReceiptInventories = dfReceiptInventories[dfReceiptInventories['WorkOrder'] == int(workOrder)]
 
-    # Group and prepare final result
-    dfReceiptInventories = dfReceiptInventories.groupby(['ReceiptNumber', 'RecInventoryId', 'Name']).agg({
+    # Group and aggregate
+    dfReceiptInventories = dfReceiptInventories.groupby(
+        ['ReceiptNumber', 'RecInventoryId', 'Name']
+    ).agg({
         'ReceiptDate': 'first',
         'Supplier': 'first',
         'Quantity': 'first',
         'WorkOrder': concatenateValues,
     }).reset_index()
 
-    return dfReceiptInventories.to_dict(orient='records')
+    cols = [i for i in dfReceiptInventories]
+    data = [dict(zip(cols, i)) for i in dfReceiptInventories.values]
+    return data
 
+
+# def GetPendingAudits(workOrder: int):
+#     '''
+#     Get all inventories whose audits are not done yet. If order number is provided, then filter data based on that.
+#     '''
+#     fields = ['id', 'ReceiptNumber', 'InventoryCode', 'Variant', 'Quantity']
+#     receiptInventories = appModels.RecInventory.objects.filter(
+#         Approval=False, QualityComments=None
+#     ).values(*fields)
+#     if not receiptInventories:
+#         return []
+#     dfReceiptInventories = pd.DataFrame(receiptInventories)
+
+#     fields = ['id', 'ReceiptDate', 'Supplier']
+#     receipts = appModels.InventoryReciept.objects.filter(
+#         id__in=dfReceiptInventories['ReceiptNumber'].to_list()
+#     ).values(*fields)
+#     dfReceipts = pd.DataFrame(receipts) if receipts else pd.DataFrame(columns=fields)
+
+#     fields = ['RecInvId', 'WorkOrder']
+#     receiptAllocations = appModels.RecAllocation.objects.filter(
+#         RecInvId__in=[
+#             x for x in dfReceiptInventories['id'].dropna().tolist() if str(x).isdigit()
+#         ]
+#     ).values(*fields)
+#     dfReceiptAllocations = pd.DataFrame(receiptAllocations) if receiptAllocations else pd.DataFrame(columns=fields)
+
+#     fields = ['Code', 'Name', 'AuditReq']
+#     inventories = appModels.Inventory.objects.filter(
+#         Code__in=dfReceiptInventories['InventoryCode'].to_list()
+#     ).values(*fields)
+#     dfInventories = pd.DataFrame(inventories) if inventories else pd.DataFrame(columns=fields)
+
+#     # Merge with inventory master
+#     dfReceiptInventories = pd.merge(
+#         dfReceiptInventories, dfInventories, left_on='InventoryCode', right_on='Code', how='left'
+#     )
+#     dfReceiptInventories.drop(columns=['InventoryCode', 'Code'], inplace=True)
+
+#     # Filter only audit-required items
+#     dfReceiptInventories = dfReceiptInventories[dfReceiptInventories['AuditReq'] == True]
+#     dfReceiptInventories.drop(columns=['AuditReq'], inplace=True)
+
+#     # Merge with allocation
+#     dfReceiptInventories = pd.merge(
+#         dfReceiptInventories, dfReceiptAllocations,
+#         left_on='id', right_on='RecInvId', how='left'
+#     )
+
+#     # Assign RecInvId to id if it was missing
+#     dfReceiptInventories['RecInvId'] = dfReceiptInventories['RecInvId'].fillna(dfReceiptInventories['id'])
+
+#     # Fill missing WorkOrder with empty string
+#     dfReceiptInventories['WorkOrder'] = dfReceiptInventories['WorkOrder'].fillna('')
+
+#     # Rename for clarity
+#     dfReceiptInventories.rename(columns={'id': 'RecInventoryId'}, inplace=True)
+
+#     # Merge with receipts
+#     dfReceiptInventories = pd.merge(
+#         dfReceiptInventories, dfReceipts,
+#         left_on='ReceiptNumber', right_on='id', how='left'
+#     )
+#     dfReceiptInventories.rename(columns={'id': 'ReceiptId'}, inplace=True)
+
+#     # Merge variant name
+#     dfReceiptInventories['Name'] = np.where(
+#         dfReceiptInventories['Variant'].str.len() == 0,
+#         dfReceiptInventories['Name'],
+#         dfReceiptInventories['Name'].astype(str) + ' - ' + dfReceiptInventories['Variant']
+#     )
+#     dfReceiptInventories.drop(columns=['Variant'], inplace=True)
+
+#     # Apply work order filter
+#     if workOrder:
+#         dfReceiptInventories = dfReceiptInventories[dfReceiptInventories['WorkOrder'] == int(workOrder)]
+
+#     # Group and prepare final result
+#     dfReceiptInventories = dfReceiptInventories.groupby(
+#         ['ReceiptNumber', 'RecInventoryId', 'Name']
+#     ).agg({
+#         'ReceiptDate': 'first',
+#         'Supplier': 'first',
+#         'Quantity': 'first',
+#         'WorkOrder': concatenateValues,
+#     }).reset_index()
+
+#     return dfReceiptInventories.to_dict(orient='records')
 
 
 def PrepareDataForAudit (dfRecInvIds: pd.DataFrame):
