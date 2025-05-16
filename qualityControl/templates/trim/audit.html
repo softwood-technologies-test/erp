@@ -5,125 +5,175 @@
 {% endblock title %}
 
 {% block content %}
-    {% csrf_token %}  <!-- This is to protect against CSRF attacks -->
-    
-    <div id="auditTable" name="auditTable">  
-        <form method="post" id="auditForm" autocomplete="off">
-            {% for receipt in inv %}  
-                <div class="mt-1" row="0">
-                    <div>
-                        <div class="flex justify-between text-center border-b" row="{{forloop.counter}}" row="1">
-                            <input class="w-full p-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md" readonly
-                            value="Supplier: {{receipt.Supplier}}, Receipt: {{receipt.ReceiptNumber}}">
-                            
-                            {% for data in receipt.Details %}
-                                <div class="mt-1 flex flex-col">
-                                    <input class="w-full p-2 text-sm bg-gray-800 text-white border border-gray-700 rounded-md" readonly
-                                    value="{{data.Name}} {% if data.Variant %} ({{data.Variant}}) {% endif %}">
-                                    
-                                    <input class="w-full p-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md" readonly
-                                    value="Total Qty: {{data.Quantity}}, Audit Qty: {{data.AuditQuantity}}">
+    {% csrf_token %}
 
-                                    <div class="mt-1 flex justify-between">
-                                        <div class="w-1/4">
-                                            <div class="p-2 text-center bg-gray-200 border border-gray-300 rounded-md">
-                                                Check List
-                                            </div> 
-                                        </div>
-                                        <div class="w-1/4">
-                                            <div class="p-2 text-center bg-gray-200 border border-gray-300 rounded-md">
-                                                Approval
-                                            </div>  
-                                        </div>
-                                        <div class="w-1/4">
-                                            <div class="p-2 text-center bg-gray-200 border border-gray-300 rounded-md">
-                                                Comments
-                                            </div>  
-                                        </div>
-                                        <div class="w-1/4">
-                                            <div class="p-2 text-center bg-gray-200 border border-gray-300 rounded-md">
-                                                Actions
-                                            </div>  
-                                        </div>
-                                    </div>
-                                    <div class="mt-1 flex justify-between">
-                                        <div class="w-1/4">
-                                            <select class="w-full p-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md" id="id_CheckList_{{data.RecInvId}}_{{receipt.ReceiptNumber}}" name="CheckList_{{data.RecInvId}}_{{receipt.ReceiptNumber}}">
-                                                {% for option in checkListOptions %}
-                                                    <option value="{{option.value}}">{{option.text}}</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                        <div class="w-1/4">
-                                            <select class="w-full p-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md" id="id_Approval_{{data.RecInvId}}_{{receipt.ReceiptNumber}}" name="Approval_{{data.RecInvId}}_{{receipt.ReceiptNumber}}">
-                                                <option value="null">Pending</option>
-                                                <option value="true">Approved</option>
-                                                <option value="false">Rejected</option>
-                                            </select>
-                                        </div>
-                                        <div class="w-1/4">
-                                            <input type="text" class="w-full p-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md" value="" name="Comments_{{data.RecInvId}}_{{receipt.ReceiptNumber}}">
-                                        </div>
-                                        <div class="w-1/4 flex justify-center">
-                                            <button class="bg-green-500 text-white p-2 rounded-full mx-1" type="button" onclick="addRow(this)">
-                                                <span>+</span>
-                                            </button>
-                                            <button class="bg-red-500 text-white p-2 rounded-full mx-1" type="button" onclick="removeRow(this, 2)">
-                                                <span>-</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
+    <div id="auditTable" class="p-6 {{ theme.table }} rounded-2xl shadow-md" name="auditTable">  
+        <form method="post" id="auditForm" autocomplete="off" class="space-y-6">
+            {% for receipt in inv %}
+                <div class="{{ theme.border }} rounded-xl p-4 bg-gray-0">
+                    <div class="mb-4 text-sm font-medium text-gray-700 bg-gray-200 rounded-md p-2">
+                        Supplier: {{ receipt.Supplier }}, Receipt #: {{ receipt.ReceiptNumber }}
                     </div>
-                </div>            
-            {% endfor %}  
 
-            <div class="mt-4 flex justify-center">
-                <a class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 cursor-pointer" role="button" onclick="submitForms()">Save</a>
+                    {% for data in receipt.Details %}
+                        <div class="space-y-2 mb-4">
+                            <div class="text-sm font-semibold bg-gray-800 text-white p-2 rounded-md">
+                                {{ data.Name }} {% if data.Variant %} ({{ data.Variant }}) {% endif %}
+                            </div>
+                            <div class="text-sm text-gray-600 bg-white p-2 rounded-md {{ theme.border }}">
+                                Total Qty: {{ data.Quantity }}, Audit Qty: {{ data.AuditQuantity }}
+                            </div>
+
+                            <div class="grid grid-cols-4 gap-3 text-center font-semibold text-sm text-gray-700">
+                                <div class="bg-gray-200 p-2 rounded-md">Check List</div>
+                                <div class="bg-gray-200 p-2 rounded-md">Approval</div>
+                                <div class="bg-gray-200 p-2 rounded-md">Comments</div>
+                                <div class="bg-gray-200 p-2 rounded-md">Actions</div>
+                            </div>
+
+                            <div class="grid grid-cols-4 gap-3">
+                                <!-- Checklist -->
+                                <div>
+                                    <select class="w-full p-2 text-sm {{ theme.dropdown }}"
+                                            name="CheckList_{{data.RecInvId}}"
+                                            required>
+                                        <option value="">Select Checklist</option>
+                                        {% for option in checkListOptions %}
+                                            <option value="{{option.value}}">{{option.text}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <!-- Approval -->
+                                <div>
+                                    <select class="w-full p-2 text-sm {{ theme.dropdown }}"
+                                            name="Approval_{{data.RecInvId}}"
+                                            required>
+                                        <option value="null">Pending</option>
+                                        <option value="true">Approved</option>
+                                        <option value="false">Rejected</option>
+                                    </select>
+                                </div>
+
+                                <!-- Comments -->
+                                <div>
+                                    <input type="text" class="w-full p-2 text-sm {{ theme.textInput }}"
+                                           name="Comments_{{data.RecInvId}}"
+                                           placeholder="Enter comments if rejected">
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="flex justify-center space-x-2">
+                                    <button type="button" onclick="addRow(this)"
+                                            class="{{ theme.plusButton }}">
+                                        +
+                                    </button>
+                                    <button type="button" onclick="removeRow(this, 2)"
+                                            class="{{ theme.minusButton }}">
+                                        −
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <div class="flex justify-center pt-4">
+                <button type="button" onclick="validateAndSubmit()"
+                   class="{{ theme.buttonSecondary }}">
+                   Save
+                </button>
             </div>
         </form>
     </div>
 
+
+
     <script>
-        // To send data to server
-        async function submitForms(){
-            showLoadingIcon();
+    async function validateAndSubmit() {
+        showLoadingIcon();
+        
+        const formData = new FormData(document.getElementById('auditForm'));
+        const auditData = {};
+        const errors = [];
 
-            const audit = document.forms['auditForm'].elements;
-
-            let data = {};
-            for (const element of audit) {
-                if (element.name) {
-                    const rowNum = element.parentElement.parentElement.getAttribute('row');
-                    data[`${element.name}_${rowNum}`] = element.value;
-                }
-            }
-            const response = await submitData(data);
-
-            if (response.ok) {
-                window.location.reload();
-            } else {
-                const error = await response.text();
-                showMessage(error);
+        // Group data by RecInvId
+        for (const [key, value] of formData.entries()) {
+            const parts = key.split('_');
+            if (parts.length !== 2) continue;
+            
+            const [fieldType, recInvId] = parts;
+            
+            if (!auditData[recInvId]) {
+                auditData[recInvId] = {
+                    RecInventory: parseInt(recInvId),
+                    CheckList: '',
+                    Approval: 'null',
+                    Comments: ''
+                };
             }
             
-            hideLoadingIcon();
+            auditData[recInvId][fieldType] = value.trim();
         }
 
-        async function submitData(obj) {
-            const data = JSON.stringify(obj);
-
-            const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+        // Validate entries
+        const payload = [];
+        for (const [recInvId, item] of Object.entries(auditData)) {
+            // Required field checks
+            if (!item.CheckList) {
+                errors.push(`Checklist required for inventory ${recInvId}`);
+            }
             
+            if (!item.Approval) {
+                errors.push(`Approval status required for inventory ${recInvId}`);
+            }
+            
+            // Comment validation for rejected items
+            if (item.Approval === 'false' && !item.Comments) {
+                errors.push(`Comments required for rejected inventory ${recInvId}`);
+            }
+            
+            payload.push({
+                RecInventory: parseInt(recInvId),
+                CheckList: item.CheckList,
+                Approval: item.Approval,
+                Comments: item.Comments || null
+            });
+        }
+
+        if (errors.length > 0) {
+            hideLoadingIcon();
+            showMessage(errors.join('\n'));
+            return;
+        }
+
+        if (payload.length === 0) {
+            hideLoadingIcon();
+            showMessage('No audit items selected');
+            return;
+        }
+
+        try {
+            const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
             const response = await fetch('/trims/audit/add', {
                 method: 'POST',
-                body: data,
-                headers: { "X-CSRFToken": csrf },
+                headers: {
+                    "X-CSRFToken": csrf,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
             });
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || 'Save failed');
             
-            return response;
+            window.location.reload();
+        } catch (error) {
+            showMessage(`Save failed: ${error.message}`);
+        } finally {
+            hideLoadingIcon();
         }
+    }
     </script>
 {% endblock content %}

@@ -6,26 +6,27 @@
 
 {% block content %}
     {% csrf_token %}
-    <div class="border border-black rounded bg-base-100 dark:bg-gray-900 p-4">
+    <div class="border {{ theme.tableHead }} rounded bg-base-100 dark:bg-gray-900 p-4">
         <form action="{% url 'pendingTrimAudit' %}" method="get" class="grid grid-cols-6 gap-2 items-center">
             <!-- Work Order Dropdown -->
             <div class="col-span-2">
-                <select id="workOrderFilter" name="workOrder" class="form-select form-select-sm rounded text-center border border-black w-full min-h-[2.5rem]">
-                    <option value="">Work Order</option>
+                <label for="workOrderFilter" class="block mb-1 font-medium text-gray-700 dark:text-gray-200">Work Order</label>
+                <select id="workOrderFilter" name="workOrder" class="form-select {{theme.dropdown}} w-56">
+                    <option value="">Select Work Order</option>
                 </select>
             </div>
 
             <!-- Search Input -->
             <div class="col-span-2">
-                <input type="text" class="form-control form-control-sm rounded text-center border border-black w-full min-h-[2.5rem]" name="searchTerm" placeholder="Search" value="{{searchTerm}}">
+                <input type="text" class="form-control {{theme.textInput}}" name="searchTerm" placeholder="Search" value="{{searchTerm}}">
             </div>
 
             <!-- Buttons -->
             <div class="col-span-2 flex gap-2 justify-end">
-                <button type="submit" class="btn btn-lg bg-black text-white hover:opacity-90 w-full min-h-[2.5rem] px-4 py-2 rounded">
+                <button type="submit" class="btn btn-lg {{ theme.buttonPrimary }} bg-blue-500 text-white hover:opacity-90 w-full min-h-[2.5rem] px-4 py-2 rounded">
                     Search
                 </button>
-                <a role="button" onclick="startAudit()" class="btn btn-success bg-gradient btn-lg text-white hover:opacity-90 w-full min-h-[2.5rem] px-4 py-2 rounded text-center cursor-pointer">
+                <a role="button" onclick="startAudit()" class="btn btn-success {{ theme.buttonSecondary }} bg-green-500 text-white hover:opacity-90 w-full min-h-[2.5rem] px-4 py-2 rounded">
                     Start Audit
                 </a>
             </div>

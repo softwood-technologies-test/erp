@@ -5,96 +5,65 @@
 {% endblock title %}
 
 {% block content %}
-    <div id="auditTable" name="auditTable">
-        <form method="post" id="auditForm" autocomplete="off">
-            {% csrf_token %} <!-- This is to protect against CSRF attacks -->
-            
-            <div class="mt-1">
-                <div>
-                    <div class="flex flex-col border-b p-2">
-                        <div class="w-full">
-                            <input class="w-full p-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md" readonly
-                                value="Supplier: {{audit.supplier}}, Receipt: {{audit.ReceiptNumber}}">
-                        </div>
-                        
-                        <div class="w-full">
-                            <div class="flex justify-between">
-                                <div class="w-3/4">
-                                    <input class="w-full p-2 text-sm bg-gray-800 text-white border border-gray-700 rounded-md" readonly
-                                        value="{{audit.Inventory}} {% if audit.Variant %} ({{audit.Variant}}) {% endif %}">
-                                </div>
-                                <div class="w-1/4 flex justify-end">
-                                    <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600">Save</button>
-                                </div>
-                            </div>
-                        </div>
+<div id="auditTable" class="p-6 {{ theme.table }} rounded-2xl shadow-md" name="auditTable">  
+    <form method="post" id="auditForm" autocomplete="off" class="space-y-6">
+        {% csrf_token %}
+        
+        <!-- Single audit info header -->
+        <div class="{{ theme.border }} rounded-xl p-4 bg-base-100">
+            <div class="mb-4 text-sm font-medium text-gray-700 bg-gray-200 rounded-md p-2">
+                Supplier: {{ audit.supplier }}, Receipt #: {{ audit.ReceiptNumber }}
+            </div>
 
-                        <div class="w-full">
-                            <input class="w-full p-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md" readonly
-                                value="Total Qty: {{audit.Quantity}}, Audit Qty: {{audit.AuditQuantity}}">
-                        </div>
-
-                        <div class="mt-1">
-                            <div class="flex justify-between bg-gray-800 text-white p-2">
-                                <div class="w-1/4 text-center">
-                                    <div class="border border-gray-500">
-                                        Check List
-                                    </div> 
-                                </div>
-                                <div class="w-1/4 text-center">
-                                    <div class="border border-gray-500">
-                                        Approval
-                                    </div>  
-                                </div>
-                                <div class="w-1/4 text-center">
-                                    <div class="border border-gray-500">
-                                        Comments
-                                    </div>  
-                                </div>
-                                <div class="w-1/4 text-center">
-                                    <div class="border border-gray-500">
-                                        Actions
-                                    </div>  
-                                </div>
-                            </div>       
-
-                            {% for auditData in audit.audit %}
-                                <div class="flex justify-between mt-1" row="{{forloop.counter}}">
-                                    <div class="w-1/4">
-                                        <select class="w-full p-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md" id="id_CheckList_{{forloop.counter}}" name="CheckList" required>
-                                            {% for option in checkListOptions %}
-                                                <option value="{{option.value}}" {% if option.value == auditData.CheckList %} selected {% endif %}> 
-                                                    {{option.text}}
-                                                </option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <div class="w-1/4">
-                                        <select class="w-full p-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md" name="Approval" required>
-                                            <option value="true" {% if auditData.Approval %} selected {% endif %}>Approved</option>
-                                            <option value="false" {% if not auditData.Approval %} selected {% endif %}>Rejected</option>
-                                        </select>
-                                    </div>
-                                    <div class="w-1/4">
-                                        <input type="number" value="{{auditData.id}}" name="id" hidden="true">
-                                        <input type="text" class="w-full p-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md" value="{{auditData.Comments}}" name="Comments">
-                                    </div>
-                                    <div class="w-1/4 flex justify-center space-x-2">
-                                        <button class="bg-green-500 text-white p-2 rounded-full hover:bg-green-600" type="button" onclick="addRow(this)">
-                                            <span>+</span>
-                                        </button>
-                                        <button class="bg-red-500 text-white p-2 rounded-full hover:bg-red-600" type="button" onclick="removeRow(this)">
-                                            <span>-</span>
-                                        </button> 
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>      
-                    </div>
+            <div class="space-y-4">
+                <div class="text-sm font-semibold bg-gray-800 text-white p-2 rounded-md">
+                    {{ audit.Inventory }} {% if audit.Variant %} ({{ audit.Variant }}) {% endif %}
+                </div>
+                <div class="text-sm text-gray-600 bg-white p-2 rounded-md {{ theme.border }}">
+                    Total Qty: {{ audit.Quantity }}, Audit Qty: {{ audit.AuditQuantity }}
                 </div>
             </div>
-        </form>
-    </div>
+
+            <div class="grid grid-cols-4 gap-3 text-center font-semibold text-sm text-gray-700 mt-4">
+                <div class="bg-gray-200 p-2 rounded-md">Check List</div>
+                <div class="bg-gray-200 p-2 rounded-md">Approval</div>
+                <div class="bg-gray-200 p-2 rounded-md">Comments</div>
+                <div class="bg-gray-200 p-2 rounded-md">Actions</div>
+            </div>
+
+            {% for auditData in audit.audit %}
+                <div class="grid grid-cols-4 gap-3 mt-2 items-center">
+                    <div>
+                        <select class="w-full p-2 text-sm {{ theme.dropdown }}" id="id_CheckList_{{forloop.counter}}" name="CheckList" required>
+                            {% for option in checkListOptions %}
+                                <option value="{{ option.value }}" {% if option.value == auditData.CheckList %} selected {% endif %}>{{ option.text }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <select class="w-full p-2 text-sm {{ theme.dropdown }}" name="Approval" required>
+                            <option value="true" {% if auditData.Approval %} selected {% endif %}>Approved</option>
+                            <option value="false" {% if not auditData.Approval %} selected {% endif %}>Rejected</option>
+                        </select>
+                    </div>
+                    <div>
+                        <input type="number" value="{{ auditData.id }}" name="id" hidden="true">
+                        <input type="text" class="w-full p-2 text-sm {{ theme.textInput }}" value="{{ auditData.Comments }}" name="Comments" placeholder="Enter comments">
+                    </div>
+                    <div class="flex justify-center space-x-2">
+                        <button type="button" class="{{ theme.plusButton }}" onclick="addRow(this)">+</button>
+                        <button type="button" class="{{ theme.minusButton }}" onclick="removeRow(this)">−</button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="flex justify-center pt-4">
+            <button type="submit" class="{{ theme.buttonSecondary }}">Save</button>
+        </div>
+    </form>
+</div>
+
 
     <script>
         // This code runs when the page is fully loaded

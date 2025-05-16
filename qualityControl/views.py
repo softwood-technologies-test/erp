@@ -109,19 +109,33 @@ def PendingTrimsAudit (request: HttpRequest):
         return render(request, 'trim/home.html', context)
 
 @login_required(login_url='/login')
-def AddTrimsAudit (request: HttpRequest):
+def AddTrimsAudit(request: HttpRequest):
     if request.method != 'POST':
-        return HttpResponse('Not allowed', status=403)
-    
-    #Convert the json to a dict
-    jsonData = json.loads(request.body.decode('utf-8'))
-    
+        return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
+
     try:
-        trim_audit_service.AddTrimsAudit(jsonData)
-        return HttpResponse('OK')
+        # Handle empty payload
+        if not request.body:
+            raise ValueError("No data received")
+
+        data = json.loads(request.body)
+        
+        # Validate payload structure
+        if not isinstance(data, list):
+            raise ValueError("Expected array of audit items")
+
+        trim_audit_service.AddTrimsAudit(data)
+        return JsonResponse({'status': 'success', 'message': f'{len(data)} audit items saved'})
+
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON format'}, status=400)
+        
     except Exception as e:
-        print(e)
-        return HttpResponse(e, status=400)
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e),
+            'type': e.__class__.__name__
+        }, status=400)
 
 @login_required(login_url='/login')
 def EditTrimsAudit (request: HttpRequest, pk: int):

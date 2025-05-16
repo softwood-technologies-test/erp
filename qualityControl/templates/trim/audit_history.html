@@ -5,35 +5,42 @@
 {% endblock %}
 
 {% block content %}
-<div class="border border-black rounded bg-base-100 dark:bg-gray-900 p-4">
+<div class="{{ theme.border }} rounded bg-base-100 dark:bg-gray-900 p-4">
     <form action="{% url 'trimAudit' %}" method="get" class="grid grid-cols-6 gap-2 items-center">
         <!-- Supplier Dropdown -->
         <div class="col-span-1">
-            <select id="supplierFilter" name="supplier" class="form-select form-select-sm rounded text-center border border-black w-full min-h-[2.5rem]">
+            <label for="supplierFilter" class="block mb-1 font-medium text-gray-700 dark:text-gray-200">Supplier</label>
+            <select id="supplierFilter" name="supplier" class="{{ theme.dropdown }} w-full min-h-[2.5rem]">
                 <option value="">Supplier</option>
+                <!-- Add supplier options dynamically here -->
             </select>
         </div>
 
         <!-- Inventory Dropdown -->
         <div class="col-span-1">
-            <select id="inventoryFilter" name="inventory" class="form-select form-select-sm rounded text-center border border-black w-full min-h-[2.5rem]">
+            <label for="inventoryFilter" class="block mb-1 font-medium text-gray-700 dark:text-gray-200">Inventory</label>
+            <select id="inventoryFilter" name="inventory" class="{{ theme.dropdown }} w-full min-h-[2.5rem]">
                 <option value="">Inventory</option>
+                <!-- Add inventory options dynamically here -->
             </select>
         </div>
 
         <!-- Start Date -->
         <div class="col-span-1">
-            <input type="date" id="startDate" name="startDate" value="{{ startDate|date:'Y-m-d' }}" class="form-control form-control-sm rounded text-center border border-black w-full min-h-[2.5rem]">
+            <label for="startDate" class="block mb-1 font-medium text-gray-700 dark:text-gray-200">Start Date</label>
+            <input type="date" id="startDate" name="startDate" value="{{ startDate|date:'Y-m-d' }}" class="{{ theme.textInput }} w-full min-h-[2.5rem]">
         </div>
 
         <!-- End Date -->
         <div class="col-span-1">
-            <input type="date" id="endDate" name="endDate" value="{{ endDate|date:'Y-m-d' }}" class="form-control form-control-sm rounded text-center border border-black w-full min-h-[2.5rem]">
+            <label for="endDate" class="block mb-1 font-medium text-gray-700 dark:text-gray-200">End Date</label>
+            <input type="date" id="endDate" name="endDate" value="{{ endDate|date:'Y-m-d' }}" class="{{ theme.textInput }} w-full min-h-[2.5rem]">
         </div>
 
         <!-- Approval Dropdown -->
         <div class="col-span-1">
-            <select name="approval" class="form-select form-select-sm rounded text-center border border-black w-full min-h-[2.5rem]">
+            <label for="approval" class="block mb-1 font-medium text-gray-700 dark:text-gray-200">Approval</label>
+            <select id="approval" name="approval" class="{{ theme.dropdown }} w-full min-h-[2.5rem]">
                 <option value="null" {% if approval == None %}selected{% endif %}>All</option>
                 <option value="true" {% if approval == True %}selected{% endif %}>Approved</option>
                 <option value="false" {% if approval == False %}selected{% endif %}>Rejected</option>
@@ -42,49 +49,55 @@
 
         <!-- Filter Button -->
         <div class="col-span-1 flex justify-end">
-            <button type="submit" class="btn btn-lg bg-black text-white hover:opacity-90 w-full min-h-[2.5rem] px-4 py-2 rounded">
+            <button type="submit" class="{{ theme.buttonSecondary }} w-full min-h-[2.5rem] px-4 py-2 rounded">
                 Filter
             </button>
         </div>
     </form>
 </div>
 
-<div id="AuditsTable" class="mt-4 border border-black rounded bg-base-100 dark">
-    <table class="table-auto w-full border border-black text-center align-middle text-sm">
-        <thead class="bg-black text-white">
+<div id="AuditsTable" class="mt-4 {{ theme.border }} rounded bg-base-100 dark:bg-gray-900 overflow-auto">
+    <table class="{{ theme.table }} w-full text-center align-middle text-sm border-collapse border border-black">
+        <thead class="{{ theme.tableHead }}">
             <tr>
-                <th class="border border-black p-2">Receipt Date</th>
-                <th class="border border-black p-2">Receipt #</th>
-                <th class="border border-black p-2">Name</th>
-                <th class="border border-black p-2">Supplier</th>
-                <th class="border border-black p-2">Approval</th>
-                <th class="border border-black p-2">Comments</th>
+                <th class="{{ theme.border }} p-2">Receipt Date</th>
+                <th class="{{ theme.border }} p-2">Receipt #</th>
+                <th class="{{ theme.border }} p-2">Name</th>
+                <th class="{{ theme.border }} p-2">Supplier</th>
+                <th class="{{ theme.border }} p-2">Approval</th>
+                <th class="{{ theme.border }} p-2">Comments</th>
             </tr>
         </thead>
-        <tbody class="even:bg-white-100 odd:bg-white">
+        <tbody class="{{ theme.tableBody }}">
             {% for data in audits %}
-            <tr class="border border-black">
-                <td class="border border-black p-2">{{ data.ReceiptDate }}</td>
-                <td class="border border-black p-2">
-                    <a href="/trims/audit/{{ data.RecInventory }}/edit" class="text-blue-600 hover:underline">
+            <tr class="{{ theme.border }}">
+                <td class="{{ theme.border }} p-2">{{ data.ReceiptDate }}</td>
+                <td class="{{ theme.border }} p-2">
+                    <a href="{% url 'editTrimAudit' data.RecInventory %}" class="{{ theme.link }}">
                         {{ data.ReceiptNumber }}
                     </a>
                 </td>
-                <td class="border border-black p-2">{{ data.Name }}</td>
-                <td class="border border-black p-2">{{ data.Supplier }}</td>
-                <td class="border border-black p-2">
+                <td class="{{ theme.border }} p-2">{{ data.Name }}</td>
+                <td class="{{ theme.border }} p-2">{{ data.Supplier }}</td>
+                <td class="{{ theme.border }} p-2">
                     {% if data.Approval %}
-                        <span class="text-green-600 font-semibold">Approved</span>
+                        <span class="text-success font-semibold">Approved</span>
                     {% else %}
-                        <span class="text-red-600 font-semibold">Rejected</span>
+                        <span class="text-danger font-semibold">Rejected</span>
                     {% endif %}
                 </td>
-                <td class="border border-black p-2">{{ data.QualityComments }}</td>
+                <td class="{{ theme.border }} p-2">{{ data.QualityComments }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="p-4 text-center text-gray-500">No audit records found.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
+
 
 <script>
     window.addEventListener('load', async () => {

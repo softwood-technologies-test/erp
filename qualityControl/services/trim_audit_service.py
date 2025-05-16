@@ -252,94 +252,6 @@ def GetPendingAudits(workOrder: int):
     return data
 
 
-# def GetPendingAudits(workOrder: int):
-#     '''
-#     Get all inventories whose audits are not done yet. If order number is provided, then filter data based on that.
-#     '''
-#     fields = ['id', 'ReceiptNumber', 'InventoryCode', 'Variant', 'Quantity']
-#     receiptInventories = appModels.RecInventory.objects.filter(
-#         Approval=False, QualityComments=None
-#     ).values(*fields)
-#     if not receiptInventories:
-#         return []
-#     dfReceiptInventories = pd.DataFrame(receiptInventories)
-
-#     fields = ['id', 'ReceiptDate', 'Supplier']
-#     receipts = appModels.InventoryReciept.objects.filter(
-#         id__in=dfReceiptInventories['ReceiptNumber'].to_list()
-#     ).values(*fields)
-#     dfReceipts = pd.DataFrame(receipts) if receipts else pd.DataFrame(columns=fields)
-
-#     fields = ['RecInvId', 'WorkOrder']
-#     receiptAllocations = appModels.RecAllocation.objects.filter(
-#         RecInvId__in=[
-#             x for x in dfReceiptInventories['id'].dropna().tolist() if str(x).isdigit()
-#         ]
-#     ).values(*fields)
-#     dfReceiptAllocations = pd.DataFrame(receiptAllocations) if receiptAllocations else pd.DataFrame(columns=fields)
-
-#     fields = ['Code', 'Name', 'AuditReq']
-#     inventories = appModels.Inventory.objects.filter(
-#         Code__in=dfReceiptInventories['InventoryCode'].to_list()
-#     ).values(*fields)
-#     dfInventories = pd.DataFrame(inventories) if inventories else pd.DataFrame(columns=fields)
-
-#     # Merge with inventory master
-#     dfReceiptInventories = pd.merge(
-#         dfReceiptInventories, dfInventories, left_on='InventoryCode', right_on='Code', how='left'
-#     )
-#     dfReceiptInventories.drop(columns=['InventoryCode', 'Code'], inplace=True)
-
-#     # Filter only audit-required items
-#     dfReceiptInventories = dfReceiptInventories[dfReceiptInventories['AuditReq'] == True]
-#     dfReceiptInventories.drop(columns=['AuditReq'], inplace=True)
-
-#     # Merge with allocation
-#     dfReceiptInventories = pd.merge(
-#         dfReceiptInventories, dfReceiptAllocations,
-#         left_on='id', right_on='RecInvId', how='left'
-#     )
-
-#     # Assign RecInvId to id if it was missing
-#     dfReceiptInventories['RecInvId'] = dfReceiptInventories['RecInvId'].fillna(dfReceiptInventories['id'])
-
-#     # Fill missing WorkOrder with empty string
-#     dfReceiptInventories['WorkOrder'] = dfReceiptInventories['WorkOrder'].fillna('')
-
-#     # Rename for clarity
-#     dfReceiptInventories.rename(columns={'id': 'RecInventoryId'}, inplace=True)
-
-#     # Merge with receipts
-#     dfReceiptInventories = pd.merge(
-#         dfReceiptInventories, dfReceipts,
-#         left_on='ReceiptNumber', right_on='id', how='left'
-#     )
-#     dfReceiptInventories.rename(columns={'id': 'ReceiptId'}, inplace=True)
-
-#     # Merge variant name
-#     dfReceiptInventories['Name'] = np.where(
-#         dfReceiptInventories['Variant'].str.len() == 0,
-#         dfReceiptInventories['Name'],
-#         dfReceiptInventories['Name'].astype(str) + ' - ' + dfReceiptInventories['Variant']
-#     )
-#     dfReceiptInventories.drop(columns=['Variant'], inplace=True)
-
-#     # Apply work order filter
-#     if workOrder:
-#         dfReceiptInventories = dfReceiptInventories[dfReceiptInventories['WorkOrder'] == int(workOrder)]
-
-#     # Group and prepare final result
-#     dfReceiptInventories = dfReceiptInventories.groupby(
-#         ['ReceiptNumber', 'RecInventoryId', 'Name']
-#     ).agg({
-#         'ReceiptDate': 'first',
-#         'Supplier': 'first',
-#         'Quantity': 'first',
-#         'WorkOrder': concatenateValues,
-#     }).reset_index()
-
-#     return dfReceiptInventories.to_dict(orient='records')
-
 
 def PrepareDataForAudit (dfRecInvIds: pd.DataFrame):
     '''
@@ -404,41 +316,92 @@ def PrepareDataForAudit (dfRecInvIds: pd.DataFrame):
     data = [dict(zip(cols, i)) for i in dfReceiptInventories.values]
     return data, checkListOptions
 
-def AddTrimsAudit (dataDict: Dict[str, Any]):
-    '''
-    Save data for a new trims audit
-    '''
-    groupedData = {}
-    for key, value in dataDict.items():
-        parts = key.split('_')
-        columnName, recInvId, recId, rowNum = parts[0], int(parts[1]), parts[2], parts[3]
-        compositeKey = (recInvId, recId, rowNum)
+def AddTrimsAudit(data: List[Dict[str, Any]]):
+    """Save data for a new trims audit with enhanced validation"""
+    if not data:
+        raise ValueError("No audit data received")
 
-        if compositeKey not in groupedData:
-            groupedData[compositeKey] = {'RecInventory': recInvId, 'RecId': recId, 'RowNum': rowNum}
-        groupedData[compositeKey][columnName] = value
-    
-    dfData = pd.DataFrame(list(groupedData.values()))
+    validation_errors = []
+    valid_items = []
+    seen_ids = set()
 
-    dfData['Approval'] = np.where(dfData['Approval'] == 'null', None, dfData['Approval'])
+    for index, item in enumerate(data, 1):
+        try:
+            # Validate required fields
+            if 'RecInventory' not in item:
+                raise ValueError(f"Item {index}: Missing inventory ID")
+            
+            try:
+                rec_inv_id = int(item['RecInventory'])
+                if rec_inv_id in seen_ids:
+                    raise ValueError(f"Duplicate inventory ID {rec_inv_id}")
+                seen_ids.add(rec_inv_id)
+            except (ValueError, TypeError):
+                raise ValueError(f"Invalid inventory ID: {item.get('RecInventory')}")
 
-    if dfData['Approval'].isna().any() or (dfData['CheckList'].str.len() == 0).any():
-        raise ValueError('Incomplete data Provided')
+            # Validate checklist
+            checklist = str(item.get('CheckList', '')).strip()
+            if not checklist:
+                raise ValueError(f"Checklist required for inventory {rec_inv_id}")
 
-    dfData['Approval'] = np.where(dfData['Approval'] == 'true', True, False)
+            # Validate approval
+            approval = str(item.get('Approval', 'null')).lower()
+            if approval not in {'true', 'false', 'null'}:
+                raise ValueError(f"Invalid approval status '{approval}' for inventory {rec_inv_id}")
 
-    if ((dfData['Approval'] == False) & (dfData['Comments'].str.len() == 0)).any():
-        raise ValueError('Comments are needed for rejected items.')
-    
-    dfData.drop(inplace=True, columns=['RowNum','RecId'])
+            # Validate comments
+            comments = str(item.get('Comments', '')).strip()
+            if approval == 'false' and not comments:
+                raise ValueError(f"Comments required for rejected inventory {rec_inv_id}")
 
-    dfData['RecInventory'] = convertTexttoObject(appModels.RecInventory, dfData['RecInventory'], 'id')
-    
-    for _,row in dfData.iterrows():
-        newEntry = models.TrimAudit(**row)
-        newEntry.save()
-    
-    updateApprovalForAudit(dfData)
+            valid_items.append({
+                'RecInventory': rec_inv_id,
+                'CheckList': checklist,
+                'Approval': {
+                    'true': True,
+                    'false': False,
+                    'null': None
+                }[approval],
+                'Comments': comments or None
+            })
+
+        except ValueError as e:
+            validation_errors.append(str(e))
+
+    if validation_errors:
+        raise ValueError("Validation errors:\n- " + "\n- ".join(validation_errors))
+
+    if not valid_items:
+        raise ValueError("No valid audit items found")
+
+    try:
+        with transaction.atomic():
+            # Verify inventory existence
+            rec_inv_ids = [item['RecInventory'] for item in valid_items]
+            existing_ids = set(appModels.RecInventory.objects.filter(
+                id__in=rec_inv_ids
+            ).values_list('id', flat=True))
+
+            missing_ids = set(rec_inv_ids) - existing_ids
+            if missing_ids:
+                raise ValueError(f"Invalid inventory IDs: {', '.join(map(str, missing_ids))}")
+
+            # Create audit records
+            models.TrimAudit.objects.bulk_create([
+                models.TrimAudit(
+                    RecInventory_id=item['RecInventory'],
+                    CheckList=item['CheckList'],
+                    Approval=item['Approval'],
+                    Comments=item['Comments']
+                ) for item in valid_items
+            ])
+
+            # Update approvals
+            df_data = pd.DataFrame(valid_items)
+            updateApprovalForAudit(df_data)
+
+    except Exception as e:
+        raise RuntimeError(f"Database error: {str(e)}")
 
 def EditTrimsAudit (formData: Dict[str, List[Any]], receiptInvNumber: int):
     '''
