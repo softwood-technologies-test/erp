@@ -5,91 +5,93 @@
 {% endblock %}
 
 {% block content %}
-    <div class="{{theme.border}}">
-        {% csrf_token %}
-        <p>
-            <div class="row g-3 {{theme.justify}} {{theme.align}}">
-                <div class="col {{theme.textJustify}}">
-                    <form action="{% url 'issue' %}" method="get">
-                        <select id="departmentFilter" name="departmentFilter" onchange="this.form.submit()" class="{{theme.dropdown}}">
-                            <option value="">  ---------  </option>
-                        </select>
-                        <input type="hidden" name="searchTerm" value="{{ searchTerm }}">
-                        <input type="hidden" name="requisitionNumber" value="{{ selectedRequisition }}">
-                    </form>
-                </div>
-                <div class="col btn-group {{theme.textJustify}}">
-                    <a id="editIssueButton" class="{{theme.buttonBasic}}" role="button" target="_blank">Edit</a>
-                </div>
-            </div>
-        </p>
-        <p>
-            <div class="row g-0 {{theme.justify}} {{theme.align}}">
-                <div class="col-2 {{theme.textJustify}}">
-                    <form action="{% url 'issue' %}" method="get">
-                        <input type="number" min="1" class="{{theme.textInput}} w-100" name="issuanceNumber" placeholder="Issuance Number" value="{{selectedIssuance}}">
-                </div>
-                <div class="col-8 {{theme.textJustify}}">
-                    <input type="text" class="{{theme.textInput}} w-100" name="searchTerm" placeholder="Search Issuances" value="{{searchTerm}}">
-                </div>
-                <div class="col-2 btn-group {{theme.textJustify}}">
-                    <button type="submit" class="{{theme.buttonBasic}}">Search</button>
-                </div>
-                    <input type="hidden" name="departmentFilter" value="{{ selectedDepartment }}">
-                    </form>
-            </div>
-        </p>
+<div class="{{theme.border}} p-6 rounded-xl shadow-md bg-inherit space-y-6">
+
+  <!-- FILTERS & ACTION BUTTONS -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+    <!-- Department Filter -->
+    <form action="{% url 'issue' %}" method="get" class="w-full md:w-auto">
+      <label class="block text-white font-semibold mb-1">Filter by Department</label>
+      <select id="departmentFilter" name="departmentFilter" onchange="this.form.submit()" class="{{theme.dropdown}} w-full text-white bg-gray-800 border-gray-600">
+        <option value="">---------</option>
+      </select>
+      <input type="hidden" name="searchTerm" value="{{ searchTerm }}">
+      <input type="hidden" name="requisitionNumber" value="{{ selectedRequisition }}">
+    </form>
+
+    <!-- Action Buttons -->
+    <div class="flex flex-wrap gap-3">
+      <a id="editIssueButton" class="{{theme.buttonSecndary}}" target="_blank">Edit</a>
     </div>
+  </div>
 
-    <div id ="requisitionTable">
-        <table class="{{theme.table}}">
-            <tr class = "{{theme.tableHead}}">
-                <th scope="col">Select</th>
-                <th scope="col">Issuance#</th>
-                <th scope="col">Date</th>
-                <th scope="col">Department</th>
-                <th scope="col">Received By</th>
-                <th scope="col">Inventory (Top 3)</th>
-                <th scope="col">Order (Top 3)</th>
-            </tr>
-            <tbody id="tableData" class = "{{theme.tableBody}}">
-                {% for data in issue %}
-                    <tr>
-                        <td><input type="radio" name="item_checkbox"></td>
-                        <td class="requisition">{{ data.id }}</td>
-                        <td>{{ data.IssuanceDate }}</td>
-                        <td>{{ data.Department }}</td>
-                        <td>{{ data.ReceivedBy }}</td>
-                        <td>{{ data.Name }}</td>
-                        <td>{{ data.WorkOrder }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+  <!-- SEARCH BAR -->
+  <form action="{% url 'issue' %}" method="get" class="flex flex-col md:flex-row gap-3 md:items-center">
+    <div class="md:w-2/12">
+      <input type="number" name="issuanceNumber" placeholder="Issuance Number" value="{{selectedIssuance}}"
+        class="{{theme.textInput}} w-full text-white bg-gray-800 border-gray-600 rounded-md p-2" />
     </div>
+    <div class="flex-1">
+      <input type="text" name="searchTerm" placeholder="Search Issuances" value="{{searchTerm}}"
+        class="{{theme.textInput}} w-full text-white bg-gray-800 border-gray-600 rounded-md p-2" />
+      <input type="hidden" name="departmentFilter" value="{{ selectedDepartment }}">
+    </div>
+    <div class="md:w-32">
+      <button type="submit" class="{{theme.buttonSecondary}}">Search</button>
+    </div>
+  </form>
 
-    <script>//To change the buttons based on selection in radio
-        $("#tableData").on("click", "input[type='radio']", function() {
-            //Get the code against seletion
-            const selectedCode = $(this).closest("tr").find("td.requisition").text();
-            
-            //Find and link the edit card button to the selected code            
-            button = $("#editIssueButton");           
-            button.attr("href", "/issuance/" + selectedCode + "/edit");
-        });
-    </script>
+  <!-- TABLE -->
+  <div id="requisitionTable" class="overflow-x-auto mt-4">
+    <table class="{{theme.table}} w-full table-fixed border border-gray-600 text-left text-sm md:text-base text-white">
+      <thead class="{{theme.tableHead}} bg-gray-900 text-white font-semibold">
+        <tr>
+          <th class="p-2 w-1/12">Select</th>
+          <th class="p-2 w-2/12">Issuance#</th>
+          <th class="p-2 w-2/12">Date</th>
+          <th class="p-2 w-2/12">Department</th>
+          <th class="p-2 w-2/12">Received By</th>
+          <th class="p-2 w-2/12">Inventory (Top 3)</th>
+          <th class="p-2 w-2/12">Order (Top 3)</th>
+        </tr>
+      </thead>
+      <tbody id="tableData" class="{{theme.tableBody}} bg-gray-800 text-white">
+        {% for data in issue %}
+        <tr class="border-t border-gray-700 hover:bg-gray-700">
+          <td class="p-2"><input type="radio" name="item_checkbox" class="accent-indigo-500"></td>
+          <td class="p-2 requisition font-mono">{{ data.id }}</td>
+          <td class="p-2">{{ data.IssuanceDate }}</td>
+          <td class="p-2">{{ data.Department }}</td>
+          <td class="p-2">{{ data.ReceivedBy }}</td>
+          <td class="p-2">{{ data.Name }}</td>
+          <td class="p-2">{{ data.WorkOrder }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 
-    <script>//To run when the page loads
-        window.addEventListener('load', async () => {
-            //Departments dropdown
-            let response = await fetch('/options/departments');
-            const departments = await response.json();
-            await appendOptions('departmentFilter', departments, '{{selectedDepartment}}');
-            //Apply Search Box
-            $("#departmentFilter").chosen({
-                search_contains: true,
-                width: "100%"
-            });
-        });
-    </script>
+  <!-- SCRIPT -->
+  <script>
+    // Update button href based on radio selection
+    $("#tableData").on("click", "input[type='radio']", function () {
+      const selectedCode = $(this).closest("tr").find("td.requisition").text().trim();
+      $("#editIssueButton").attr("href", "/issuance/" + selectedCode + "/edit");
+    });
+
+    // Populate department dropdown on load
+    window.addEventListener('load', async () => {
+      let response = await fetch('/options/departments');
+      const departments = await response.json();
+      await appendOptions('departmentFilter', departments, '{{selectedDepartment}}');
+      $("#departmentFilter").chosen({
+        search_contains: true,
+        width: "100%"
+      });
+    });
+  </script>
+
+</div>
 {% endblock %}
+    

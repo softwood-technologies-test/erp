@@ -2,105 +2,83 @@
 
 {% block title %}
     Requisition Form
-{% endblock %} 
+{% endblock %}
 
 {% block content %}
-    {% csrf_token %}          <!--This is to protect against CSRF attacks-->
+    {% csrf_token %}
+
     <!-- Selection Form -->
-    <p>
-        <form method="GET" id="reqForm" autocomplete="off">
-            <div class="row g-3 bg-info {{theme.justify}} {{theme.align}} {{theme.border}}">
-                <div class="col-2 {{theme.align}} {{theme.justify}}">
-                    <label>Group:&nbsp; </label>
-                    <select id="id_Group" class="{{theme.dropdown}}" name="Group" onchange="changeInvDropdown(this)"></select>
-                </div>
-                <div class="col-4 {{theme.align}} {{theme.justify}}">
-                    <label>Inventory*:&nbsp; </label>
-                    <select id="id_Inventory" class="{{theme.dropdown}}" name="Inventory"></select>
-                </div>
-                <div class="col-2 {{theme.align}} {{theme.justify}}">
-                    <label>Department*:&nbsp; </label>
-                    <select id="id_Department" class="{{theme.dropdown}}" name="Department"></select>
-                </div>
-                <div class="col btn-group {{theme.align}} {{theme.textJustify}}">
-                    <button type="submit" class="{{theme.buttonSecondary}}">          <!--Save Button-->
-                        Refresh
-                    </button>
-                    <button id="submit" class="{{theme.buttonSecondary}}" onclick="addRequest()" type="button">          <!--Save Button-->
-                        Add
-                    </button>
-                </div>
+    <form method="GET" id="reqForm" autocomplete="off" class="mb-6">
+        <div class="flex flex-wrap gap-4 items-center bg-gray-800 p-4 rounded-lg">
+            <div class="flex flex-col text-white">
+                <label for="id_Group">Group:</label>
+                <select id="id_Group" class="{{ theme.dropdown }}" name="Group" onchange="changeInvDropdown(this)"></select>
             </div>
-        </form>
-    </p>
+            <div class="flex flex-col text-white">
+                <label for="id_Inventory">Inventory*:</label>
+                <select id="id_Inventory" class="{{ theme.dropdown }}" name="Inventory"></select>
+            </div>
+            <div class="flex flex-col text-white">
+                <label for="id_Department">Department*:</label>
+                <select id="id_Department" class="{{ theme.dropdown }}" name="Department"></select>
+            </div>
+            <div class="flex gap-2 mt-4">
+                <button type="submit" class="{{ theme.buttonSecondary }}">Refresh</button>
+                <button id="submit" class="{{ theme.buttonSecondary }}" onclick="addRequest()" type="button">Add</button>
+            </div>
+        </div>
+    </form>
 
     <!-- Inventory Selection Table -->
-    <div id="inventoryTable" name="invTable">
-        <form method="POST" id="inventoryForm" autocomplete="off">
-            <div class="row mt-3 {{theme.justify}} {{theme.textJustify}} bg-dark text-white" row="0">
-                <div class="col-1">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        <input class="form-check-input" type="checkbox" value="" onclick="selectAll(this)">
-                    </div>
-                </div>
-                <div class="col-1">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Receipt#
-                    </div>
-                </div>
-                <div class="col-2">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Receipt Date
-                    </div>
-                </div>
-                <div class="col-2">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Variant
-                    </div>
-                </div>
-                <div class="col-2">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Supplier
-                    </div>
-                </div>
-                <div class="col-2">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Available
-                    </div>
-                </div>
-                <div class="col-2">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        To Request
-                    </div>
-                </div>
-            </div>
-            {% for data in entries %}
-                <div class="row mt-1 {{theme.justify}} {{theme.textJustify}}" row="{{forloop.counter}}">
-                    <div class="col-1">
-                        <input class="form-check-input" type="checkbox">
-                    </div>
-                    <div class="col-1">
-                        <input type="text" class="{{theme.textInput}}" value="{{data.ReceiptNumber}}" name="ReceiptNo" readonly>
-                    </div>
-                    <div class="col-2">
-                        <input type="text" class="{{theme.textInput}}" value="{{data.ReceiptDate}}" name="ReceiptDate" readonly>
-                    </div>
-                    <div class="col-2">
-                        <input type="text" class="{{theme.textInput}}" value="{{data.Variant}}" name="Variant" readonly>
-                    </div>
-                    <div class="col-2">
-                        <input type="text" class="{{theme.textInput}}" value="{{data.Supplier}}" name="Supplier" readonly>
-                    </div>
-                    <div class="col-2">
-                        <input type="number" class="{{theme.textInput}}" value="{{data.Available}}" name="Available" readonly>
-                    </div>
-                    <div class="col-2">
-                        <input type="number" max="{{data.Available}}" class="{{theme.textInput}}" value="{{data.Available}}" name="Requested" onchange="checkQty(this)">
-                    </div>
-                </div>
-            {% endfor %}
-        </form>
-    </div>
+    <form method="POST" id="inventoryForm" autocomplete="off">
+        <div class="overflow-x-auto">
+            <table class="{{theme.table}} w-full table-fixed border border-gray-600 text-left text-sm md:text-base text-white" id="inventoryTable">
+                <thead class="bg-gray-900">
+                    <tr>
+                        <th class="px-4 py-2 text-left">
+                            <input type="checkbox" onclick="selectAll(this)">
+                        </th>
+                        <th class="px-4 py-2 text-left">Receipt#</th>
+                        <th class="px-4 py-2 text-left">Receipt Date</th>
+                        <th class="px-4 py-2 text-left">Variant</th>
+                        <th class="px-4 py-2 text-left">Supplier</th>
+                        <th class="px-4 py-2 text-left">Available</th>
+                        <th class="px-4 py-2 text-left">To Request</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-gray-800 divide-y divide-gray-700">
+                    {% for data in entries %}
+                        <tr>
+                            <td class="px-4 py-2">
+                                <input type="checkbox" class="form-check-input">
+                            </td>
+                            <td class="px-4 py-2">
+                                <input type="text" class="{{ theme.textInput }}" value="{{ data.ReceiptNumber }}" name="ReceiptNo" readonly>
+                            </td>
+                            <td class="px-4 py-2">
+                                <input type="text" class="{{ theme.textInput }}" value="{{ data.ReceiptDate }}" name="ReceiptDate" readonly>
+                            </td>
+                            <td class="px-4 py-2">
+                                <input type="text" class="{{ theme.textInput }}" value="{{ data.Variant }}" name="Variant" readonly>
+                            </td>
+                            <td class="px-4 py-2">
+                                <input type="text" class="{{ theme.textInput }}" value="{{ data.Supplier }}" name="Supplier" readonly>
+                            </td>
+                            <td class="px-4 py-2">
+                                <input type="number" class="{{ theme.textInput }}" value="{{ data.Available }}" name="Available" readonly>
+                            </td>
+                            <td class="px-4 py-2">
+                                <input type="number" max="{{ data.Available }}" class="{{ theme.textInput }}" value="{{ data.Available }}" name="Requested" onchange="checkQty(this)">
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+
+
+
 
     <script> //To run when the page loads
         window.addEventListener('load', async () => {

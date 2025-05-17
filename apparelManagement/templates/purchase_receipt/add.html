@@ -5,103 +5,100 @@
 {% endblock %} 
 
 {% block content %}
-    {% csrf_token %}          <!--This is to protect against CSRF attacks-->
+<form method="POST" id="receiptForm" autocomplete="off" class="space-y-6">
+    {% csrf_token %}
 
-    <!-- The main Order form-->
-    <p>
-        <form method="POST" id="receiptForm" autocomplete="off">
-            <div class="row g-3 bg-info {{theme.justify}} {{theme.align}} {{theme.border}}">
-                <div class="col-2 d-flex {{theme.align}} {{theme.justify}}" onchange="getPO(this)">
-                    <label>PO:&nbsp; </label>
-                    <select id="id_PO" class="{{theme.dropdown}}" name="PONumber"> </select>
-                </div>
-                <div class="col-2 d-flex {{theme.align}} {{theme.justify}}">
-                    <label>Invoice:&nbsp; </label>
-                    {{receipt.Invoice}}
-                </div>
-                <div class="col-2 d-flex {{theme.align}} {{theme.justify}}">
-                    <label>Vehicle:&nbsp; </label>
-                    {{receipt.Vehicle}}
-                </div>
-                <div class="col-2 d-flex {{theme.align}} {{theme.justify}}">
-                    <label>Bilty#:&nbsp; </label>
-                    {{receipt.Bilty}}
-                </div>
-                <div class="col-2 d-flex {{theme.align}} {{theme.justify}}">
-                    <label>Amount:&nbsp; </label>
-                    {{receipt.BiltyValue}}
-                </div>
-                <div class="col-1 {{theme.align}} {{theme.textJustify}}">
-                    <button id="submit" class="{{theme.buttonSecondary}}" onclick="submitForms()" type="button">          <!--Save Button-->
-                        Save
-                    </button>
-                </div>
+    <!-- MAIN RECEIPT FORM -->
+    <div class="p-6 rounded-xl shadow-md {{theme.border}} space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-4 items-center">
+            <!-- PO Dropdown -->
+            <div class="col-span-1 md:col-span-1" onchange="getPO(this)">
+                <label class="block font-semibold text-white-800 mb-1">PO</label>
+                <select id="id_PO" name="PONumber" class="{{theme.dropdown}} w-full"></select>
             </div>
-        </form>
-    </p>
-    <!--Inventory Table-->
-    <div id="inventoryTable" name="invTable">
-        <div class="row">
-            <div class="col-8 {{theme.border}}">
-                <form method="POST" id="inventoryForm" autocomplete="off">
-                    <div class="row mt-3 {{theme.justify}} {{theme.textJustify}} bg-dark text-white" row="0">    
-                        <div class="col-5">
-                            <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                                Inventory Code
-                            </div>
-                        </div>
-                        <div class="col-2">
-                            <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                                Variant
-                            </div>
-                        </div>
-                        <div class="col-3">
-                            <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                                Quantity
-                            </div>
-                        </div>
-                        <div class="col-2">
-                            <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                                Actions
-                            </div>
-                        </div>
-                    </div>
-                    
-                    {% for data in inventory %}
-                        <div class="row mt-1 {{theme.justify}} {{theme.textJustify}}" row="{{forloop.counter}}">
-                            <div class="col-5">
-                                <input type="text" class="{{theme.textInput}}" value="{{data.Inventory}}" name="InvCode" hidden>
-                                <input type="text" class="{{theme.textInput}}" value="{{data.Name}}" name="Name" readonly>
-                            </div>
-                            <div class="col-2">
-                                <input type="text" class="{{theme.textInput}}" value="{{data.Variant}}" name="Variant" readonly>
-                            </div>
-                            <div class="col-3">
-                                <input type="number" class="{{theme.textInput}}" value="{{data.Quantity}}" name="Quantity">
-                            </div>
-                            <div class="col-2">
-                                <button class="{{theme.plusButton}}" type="button" onclick="addRow(this)">
-                                    <span>+</span>
-                                </button>
-                                <button class="{{theme.minusButton}}" type="button" onclick="removeRow(this)">
-                                    <span>-</span>
-                                </button>
-                            </div>
-                        </div>    
-                    {% endfor %} 
-                </form>
+
+            <!-- Invoice -->
+            <div class="col-span-1 md:col-span-1">
+                <label class="block font-semibold text-white-800 mb-1">Invoice</label>
+                {{receipt.Invoice}}
             </div>
-            <div class="col-4 {{theme.border}}">
-                <div class="row mt-3 {{theme.justify}} {{theme.textJustify}} bg-dark text-white">
-                    <div class="col">
-                        <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                            Context Box
-                        </div>
-                    </div>
-                </div>
+
+            <!-- Vehicle -->
+            <div class="col-span-1 md:col-span-1">
+                <label class="block font-semibold text-white-800 mb-1">Vehicle</label>
+                {{receipt.Vehicle}}
             </div>
-        </div>     
+
+            <!-- Bilty -->
+            <div class="col-span-1 md:col-span-1">
+                <label class="block font-semibold text-white-800 mb-1">Bilty#</label>
+                {{receipt.Bilty}}
+            </div>
+
+            <!-- Amount -->
+            <div class="col-span-1 md:col-span-1">
+                <label class="block font-semibold text-white-800 mb-1">Amount</label>
+                {{receipt.BiltyValue}}
+            </div>
+
+            <!-- Save Button -->
+            <div class="col-span-1 md:col-span-1 flex justify-end items-end">
+                <button id="submit" class="{{theme.buttonSecondary}} w-full" type="button" onclick="submitForms()">Save</button>
+            </div>
+        </div>
     </div>
+</form>
+
+<!-- INVENTORY TABLE -->
+<div class="mt-6 space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Inventory Form -->
+        <div class="md:col-span-2 {{theme.border}} p-4 rounded-xl shadow-md">
+            <form method="POST" id="inventoryForm" autocomplete="off" class="space-y-2">
+                {% csrf_token %}
+
+                <!-- Table Headers -->
+                <div class="grid grid-cols-12 gap-2 bg-gray-800 text-white font-semibold text-sm p-2 rounded">
+                    <div class="col-span-5">Inventory Code</div>
+                    <div class="col-span-2">Variant</div>
+                    <div class="col-span-3">Quantity</div>
+                    <div class="col-span-2">Actions</div>
+                </div>
+
+                <!-- Inventory Rows -->
+                {% for data in inventory %}
+                <div class="grid grid-cols-12 gap-2 items-center p-2 bg-gray-100 rounded">
+                    <div class="col-span-5">
+                        <input type="text" name="InvCode" value="{{data.Inventory}}" hidden>
+                        <input type="text" class="{{theme.textInput}} w-full" name="Name" value="{{data.Name}}" readonly>
+                    </div>
+                    <div class="col-span-2">
+                        <input type="text" class="{{theme.textInput}} w-full" name="Variant" value="{{data.Variant}}" readonly>
+                    </div>
+                    <div class="col-span-3">
+                        <input type="number" class="{{theme.textInput}} w-full" name="Quantity" value="{{data.Quantity}}">
+                    </div>
+                    <div class="col-span-2 flex gap-1">
+                        <button type="button" class="{{theme.plusButton}}" onclick="addRow(this)">+</button>
+                        <button type="button" class="{{theme.minusButton}}" onclick="removeRow(this)">-</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </form>
+        </div>
+
+        <!-- Context Box -->
+        <div class="{{theme.border}} p-4 rounded-xl shadow-md">
+            <div class="bg-gray-800 text-white text-sm font-semibold p-2 rounded">
+                Context Box
+            </div>
+            <!-- Add any extra context content here -->
+        </div>
+    </div>
+</div>
+
+
 
     <script> //To run after page loads.
         window.addEventListener('load', async () => {

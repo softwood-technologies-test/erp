@@ -2,121 +2,142 @@
 
 {% block title %}
     Work Order Addition
-{% endblock %} 
+{% endblock %}
 
 {% block content %}
-    {% csrf_token %}          <!--This is to protect against CSRF attacks-->
+    {% csrf_token %}
 
-    <!-- The main Order form-->
-    <p>
-        <form method="POST" id="orderForm" autocomplete="off">
-            <div class="row g-3 bg-info {{theme.justify}} {{theme.align}} {{theme.border}}">
-                <div class="col col-md-3 d-flex {{theme.align}} {{theme.justify}}">
-                    <label>Order#:&nbsp; </label>
-                    {{order.WorkOrderNumber}}
-                </div>
-                <div class="col col-md-3 d-flex {{theme.align}} {{theme.justify}}">
-                    <label>Style:&nbsp; </label>
-                    <select id="id_Style" class="{{theme.dropdown}}" name="Style" onchange="getCustomerForStyle(this.value)"> </select>
-                </div>
-                <div class="col col-md-2 d-flex {{theme.align}} {{theme.justify}}">
-                    <label>Customer:&nbsp; </label>
-                    <select id="id_Customer" class="{{theme.dropdown}}" name="Customer"> </select>
-                </div>
-                <div class="col col-md-2 d-flex {{theme.align}} {{theme.justify}}">
-                    <label>DD:&nbsp; </label>
-                    {{order.DeliveryDate}}
-                </div>
-                <div class="col col-md-2 d-flex {{theme.align}} {{theme.justify}}">
-                    <label>Type:&nbsp; </label>
-                    <select id="id_Type" class="{{theme.dropdown}}" name="Type"> </select>
-                </div>
-                <div class="col col-md-2 d-flex {{theme.align}} {{theme.justify}}">
-                    <label>Currency:&nbsp; </label>
-                    <select id="id_Currency" class="{{theme.dropdown}}" name="Currency">
-                    </select>
-                </div>
-                <div class="col col-md-2 d-flex {{theme.align}} {{theme.justify}}">
-                    <label>Price:&nbsp; </label>
-                    {{order.Price}}
-                </div>
-                <div class="col col-md-3 d-flex {{theme.align}} {{theme.justify}}">
-                    <label>Agency:&nbsp; </label>
-                    {{order.Agent}}
-                </div>
-                <div class="col col-md-2 d-flex {{theme.align}} {{theme.justify}}">
-                    <label>Commission(%):&nbsp; </label>
-                    {{order.Commission}}
-                </div>
-                <div class="col col-md-2 d-flex {{theme.align}} {{theme.justify}}">
-                    <label>Excess Cut(%):&nbsp; </label>
-                    {{order.ExcessCut}}
-                </div>
-                <div class="col col-md-1 {{theme.align}} {{theme.textJustify}}">
-                    <button id="submit" class="{{theme.buttonSecondary}}" onclick="submitForms()" type="button">          <!--Save Button-->
-                        Save
-                    </button>
-                </div>
+    <!-- The main Order form -->
+    <form method="POST" id="orderForm" autocomplete="off" class="{{theme.border}} p-4">
+        <div class="row g-4">
+
+            <!-- Order # -->
+            <div class="col-lg-4 d-flex justify-content-between {{theme.align}}">
+                <label class="fw-bold">Order#: </label>
+                <span>{{order.WorkOrderNumber}}</span>
             </div>
-        </form>
-    </p>
-    <!-- Buttons-->
-    <p>
-        <div class="row g-3 {{theme.justify}} {{theme.align}} {{theme.textJustify}}">
-            <div class = "col col-md-3 {{theme.justify}}">
-                <button id="btn_calculateVar" class="{{theme.buttonBasic}}" type="button" onclick="calculateVariants()">
-                    Calculate Variants
-                </button>
+
+            <!-- Style Dropdown -->
+            <div class="col-lg-4">
+                <label for="id_Style" class="fw-bold">Style: </label>
+                <select id="id_Style" class="{{theme.dropdown}}" name="Style" onchange="getCustomerForStyle(this.value)">
+                    <!-- Options will be populated dynamically -->
+                </select>
+            </div>
+
+            <!-- Customer Dropdown -->
+            <div class="col-lg-4">
+                <label for="id_Customer" class="fw-bold">Customer: </label>
+                <select id="id_Customer" class="{{theme.dropdown}}" name="Customer">
+                    <!-- Options will be populated dynamically -->
+                </select>
+            </div>
+
+            <!-- Delivery Date -->
+            <div class="col-lg-4 d-flex justify-content-between {{theme.align}}">
+                <label class="fw-bold">DD: </label>
+                <span>{{order.DeliveryDate}}</span>
+            </div>
+
+            <!-- Type Dropdown -->
+            <div class="col-lg-4">
+                <label for="id_Type" class="fw-bold">Type: </label>
+                <select id="id_Type" class="{{theme.dropdown}}" name="Type">
+                    <!-- Options will be populated dynamically -->
+                </select>
+            </div>
+
+            <!-- Currency Dropdown -->
+            <div class="col-lg-4">
+                <label for="id_Currency" class="fw-bold">Currency: </label>
+                <select id="id_Currency" class="{{theme.dropdown}}" name="Currency">
+                    <!-- Options will be populated dynamically -->
+                </select>
+            </div>
+
+            <!-- Price -->
+            <div class="col-lg-4 d-flex justify-content-between {{theme.align}}">
+                <label class="fw-bold">Price: </label>
+                <span>{{order.Price}}</span>
+            </div>
+
+            <!-- Agency -->
+            <div class="col-lg-4 d-flex justify-content-between {{theme.align}}">
+                <label class="fw-bold">Agency: </label>
+                <span>{{order.Agent}}</span>
+            </div>
+
+            <!-- Commission -->
+            <div class="col-lg-4 d-flex justify-content-between {{theme.align}}">
+                <label class="fw-bold">Commission (%): </label>
+                <span>{{order.Commission}}</span>
+            </div>
+
+            <!-- Excess Cut -->
+            <div class="col-lg-4 d-flex justify-content-between {{theme.align}}">
+                <label class="fw-bold">Excess Cut (%): </label>
+                <span>{{order.ExcessCut}}</span>
+            </div>
+
+            <!-- Save Button -->
+            <div class="col-12 d-flex justify-content-end">
+                <button id="submit" class="{{theme.buttonSecondary}}" onclick="submitForms()" type="button">Save</button>
             </div>
         </div>
-    </p>
+    </form>
 
-    <!--Variants Table-->
-    <div id="variantTable" name="varTable">
-        <form method="POST" id="variantForm" autocomplete="off">
-            <div class="row mt-3 {{theme.justify}} {{theme.textJustify}} bg-dark text-white" row="0">    
-                <div class="col col-md-3">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Variant Name
-                    </div>
-                </div>
-                <div class="col col-md-3">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Quantity
-                    </div>
-                </div>
-                <div class="col col-md-3">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Description
-                    </div>
-                </div>
-                <div class="col col-md-1">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Actions
-                    </div>
-                </div>
-            </div>
-            <div class="row mt-1 {{theme.justify}} {{theme.textJustify}}" row="1">
-                <div class="col col-md-3">
-                    {{variants.Name}}
-                </div>
-                <div class="col col-md-3">
-                    {{variants.Quantity}}
-                </div>
-                <div class="col col-md-3">
-                    {{variants.Description}}
-                </div>
-                <div class="col col-md-1">
-                    <button class="{{theme.plusButton}}" type="button" onclick="addRow(this)">
-                        <span>+</span>
-                    </button>
-                    <button class="{{theme.minusButton}}" type="button" onclick="removeRow(this)">
-                        <span>-</span>
-                    </button>
-                </div>
-            </div>
+    <!-- Calculate Variants Button -->
+    <div class="mt-4 {{theme.justify}}">
+        <button id="btn_calculateVar" class="{{theme.buttonBasic}}" type="button" onclick="calculateVariants()">Calculate Variants</button>
+    </div>
+
+    <!-- Variants Table -->
+    
+
+            <!-- Variant Data Row -->
+            <!-- Variant Data Row -->
+<div class="row border-top p-3 align-middle">
+    <!-- Variant Name -->
+    <div class="col">
+        <div class="d-flex flex-column {{theme.align}}">
+            <label class="fw-bold">Variant Name</label>
+            {{variants.Name}}
+        </div>
+    </div>
+
+    <!-- Quantity -->
+    <div class="col">
+        <div class="d-flex flex-column {{theme.align}}">
+            <label class="fw-bold">Quantity</label>
+            {{variants.Quantity}}
+        </div>
+    </div>
+
+    <!-- Description -->
+    <div class="col">
+        <div class="d-flex flex-column {{theme.align}}">
+            <label class="fw-bold">Description</label>
+            {{variants.Description}}
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="col d-flex align-items-center justify-content-center gap-2 mt-4">
+        <button class="{{theme.plusButton}}" type="button" onclick="addRow(this)">
+            <span>+</span>
+        </button>
+        <button class="{{theme.minusButton}}" type="button" onclick="removeRow(this)">
+            <span>-</span>
+        </button>
+    </div>
+</div>
+
         </form>
     </div>
+
+
+
+
 
     <script> //To change view based on selected button
         const tableIds = ['variantTable',];

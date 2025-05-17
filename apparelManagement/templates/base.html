@@ -64,35 +64,37 @@
 
   <body class="font-sans bg-base-200 text-base-content">
     <!-- Navigation Bar -->
-    <div class="navbar bg-base-100 shadow-md px-2 py-2 z-20">
-      <div class="navbar-start flex space-x-2">
-        <ul class="menu menu-horizontal px-1 flex items-center space-x-6">
+    <div class="navbar {{theme.navigationBar}} bg-base-100 shadow-md px-2 py-2 z-20">
+      <div
+        class="flex w-full items-center justify-between overflow-visible whitespace-nowrap"
+      >
+        <ul class="menu menu-horizontal flex items-center gap-1 text-sm">
           <li><a href="/apparel">Dashboard</a></li>
 
-          <li class="dropdown dropdown-hover relative">
+          <li class="dropdown dropdown-hover">
             <label tabindex="0" class="cursor-pointer">Inventory</label>
             <ul
-              class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 absolute left-0 mt-1 z-30"
+              class="dropdown-content menu p-2 shadow bg-base-100 rounded-box mt-1 z-30"
             >
               <li><a href="/inv?groupFilter=Trim">View All</a></li>
               <li><a href="/inv/add">Add New</a></li>
             </ul>
           </li>
 
-          <li class="dropdown dropdown-hover relative">
+          <li class="dropdown dropdown-hover">
             <label tabindex="0" class="cursor-pointer">Style Card</label>
             <ul
-              class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 absolute left-0 mt-1 z-30"
+              class="dropdown-content menu p-2 shadow bg-base-100 rounded-box mt-1 z-30"
             >
               <li><a href="/style">View All</a></li>
               <li><a href="/style/add">Add New</a></li>
             </ul>
           </li>
 
-          <li class="dropdown dropdown-hover relative">
+          <li class="dropdown dropdown-hover">
             <label tabindex="0" class="cursor-pointer">Work Order</label>
             <ul
-              class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-60 absolute left-0 mt-1 z-30"
+              class="dropdown-content menu p-2 shadow bg-base-100 rounded-box mt-1 z-30 w-60"
             >
               <li><a href="/workorder">View All</a></li>
               <li><a href="/workorder/add">Add New</a></li>
@@ -100,40 +102,40 @@
             </ul>
           </li>
 
-          <li class="dropdown dropdown-hover relative">
+          <li class="dropdown dropdown-hover">
             <label tabindex="0" class="cursor-pointer">Purchase Demand</label>
             <ul
-              class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 absolute left-0 mt-1 z-30"
+              class="dropdown-content menu p-2 shadow bg-base-100 rounded-box mt-1 z-30"
             >
               <li><a href="/purchasedemand">View All</a></li>
               <li><a href="/purchasedemand/add">Add New</a></li>
             </ul>
           </li>
 
-          <li class="dropdown dropdown-hover relative">
+          <li class="dropdown dropdown-hover">
             <label tabindex="0" class="cursor-pointer">Inventory Order</label>
             <ul
-              class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 absolute left-0 mt-1 z-30"
+              class="dropdown-content menu p-2 shadow bg-base-100 rounded-box mt-1 z-30"
             >
               <li><a href="/purchaseorder">View All</a></li>
               <li><a href="/purchaseorder/add">Add New</a></li>
             </ul>
           </li>
 
-          <li class="dropdown dropdown-hover relative">
+          <li class="dropdown dropdown-hover">
             <label tabindex="0" class="cursor-pointer">Inventory Receipt</label>
             <ul
-              class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 absolute left-0 mt-1 z-30"
+              class="dropdown-content menu p-2 shadow bg-base-100 rounded-box mt-1 z-30"
             >
               <li><a href="/purchasereceipt">View All</a></li>
               <li><a href="/purchasereceipt/add">Add New</a></li>
             </ul>
           </li>
 
-          <li class="dropdown dropdown-hover relative">
+          <li class="dropdown dropdown-hover">
             <label tabindex="0" class="cursor-pointer">Issuance</label>
             <ul
-              class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-60 absolute left-0 mt-1 z-30"
+              class="dropdown-content menu p-2 shadow bg-base-100 rounded-box mt-1 z-30 w-60"
             >
               <li><a href="/requisition">View Requests</a></li>
               <li><a href="/requisition/add/order">Request For Order</a></li>
@@ -142,10 +144,8 @@
             </ul>
           </li>
         </ul>
-      </div>
 
-      <div class="navbar-end flex items-center space-x-6">
-        <ul class="menu menu-horizontal px-1 flex items-center space-x-6">
+        <ul class="menu menu-horizontal flex items-center gap-3 text-sm">
           {% if user.is_authenticated %}
           <li><span>Logged in as {{ user.first_name }}</span></li>
           <li><a href="/logout" class="hover:text-primary">Logout</a></li>
@@ -210,43 +210,49 @@
       </div>
     </div>
 
+    <script>
+      //To add the options for selects
+      async function appendOptions(elementId, options, selected = null) {
+        try {
+          const element = document.getElementById(elementId);
+          element.innerHTML = "";
 
-    <script>    //To add the options for selects
-      async function appendOptions (elementId, options, selected=null) {
-          try {
-            const element = document.getElementById(elementId);    
-            element.innerHTML = ''; 
+          const fragment = document.createDocumentFragment();
 
-            const fragment = document.createDocumentFragment();
+          options.forEach((optionData) => {
+            const option = document.createElement("option");
+            option.text = optionData.text;
+            option.value = optionData.value;
+            if (optionData.value == selected) {
+              option.selected = true;
+            }
+            fragment.appendChild(option);
+          });
 
-            options.forEach(optionData => {
-              const option = document.createElement('option');
-              option.text = optionData.text;
-              option.value = optionData.value;
-              if (optionData.value == selected) {
-                  option.selected = true;
-              }
-              fragment.appendChild(option);
-            });
-    
-            element.appendChild(fragment);
-          } catch (error) {
-            showMessage(`An Error occured: `+error);
-          }
+          element.appendChild(fragment);
+        } catch (error) {
+          showMessage(`An Error occured: ` + error);
+        }
       }
     </script>
 
-    <script>    //To show message to a user
+    <script>
+      //To show message to a user
       function showMessage(message, timeOut = 3) {
         //Get the container element
-        const messageContainer = document.getElementById('message-container');
+        const messageContainer = document.getElementById("message-container");
 
         // Create a new alert element
-        const messageElement = document.createElement('div');
+        const messageElement = document.createElement("div");
         //Set the correct bootstap class
-        messageElement.classList.add('alert', 'alert-dismissible', 'fade', 'show');
-        messageElement.setAttribute('role', 'alert');
-        
+        messageElement.classList.add(
+          "alert",
+          "alert-dismissible",
+          "fade",
+          "show"
+        );
+        messageElement.setAttribute("role", "alert");
+
         //Add a the message and close button to the message.
         messageElement.innerHTML = `
             <span>${message}</span>
@@ -258,41 +264,47 @@
 
         //close the message automatically after given number of seconds
         setTimeout(() => {
-            const bsAlert = new bootstrap.Alert(messageElement);
-            bsAlert.close();
-          },
-          timeOut * 1000
-        );
+          const bsAlert = new bootstrap.Alert(messageElement);
+          bsAlert.close();
+        }, timeOut * 1000);
       }
     </script>
 
-    <script>  //To show/hide loading icon to user
-      function showLoadingIcon(top=100, left=10, zIndex=9999) {
-        const loadingIcon = document.getElementById('loadingIcon');
+    <script>
+      //To show/hide loading icon to user
+      function showLoadingIcon(top = 100, left = 10, zIndex = 9999) {
+        const loadingIcon = document.getElementById("loadingIcon");
 
         loadingIcon.style.top = `${top}px`;
         loadingIcon.style.left = `${left}px`;
         loadingIcon.style.zIndex = zIndex;
 
-        loadingIcon.removeAttribute('hidden');
+        loadingIcon.removeAttribute("hidden");
       }
 
       function hideLoadingIcon() {
-        const loadingIcon = document.getElementById('loadingIcon');
+        const loadingIcon = document.getElementById("loadingIcon");
 
-        loadingIcon.setAttribute('hidden','');
+        loadingIcon.setAttribute("hidden", "");
       }
     </script>
 
-    <script>  //To show options dialogue box
-      function showDropDown(options, onOkFunction, selected=null, searchBox=false) {
-        const dialogBox = document.getElementById('dropdown');
+    <script>
+      //To show options dialogue box
+      function showDropDown(
+        options,
+        onOkFunction,
+        selected = null,
+        searchBox = false
+      ) {
+        const dialogBox = document.getElementById("dropdown");
 
-        const dropdown = dialogBox.children[0].children[0].children[1].children[0].children[0];
-        dropdown.innerHTML = '';
+        const dropdown =
+          dialogBox.children[0].children[0].children[1].children[0].children[0];
+        dropdown.innerHTML = "";
 
         for (const option of options) {
-          const newOption = document.createElement('option');
+          const newOption = document.createElement("option");
           newOption.text = option.text;
           newOption.value = option.value;
 
@@ -305,17 +317,21 @@
         }
 
         //Set the function to call whent the OK button is called
-        const okButton = dialogBox.children[0].children[0].children[2].children[0];
+        const okButton =
+          dialogBox.children[0].children[0].children[2].children[0];
         okButton.onclick = onOkFunction;
 
         if (searchBox) {
-          if ($(dropdown).hasClass("chosenSelect")) { // Check if Chosen is already initialized
+          if ($(dropdown).hasClass("chosenSelect")) {
+            // Check if Chosen is already initialized
             $(dropdown).trigger("chosen:updated"); // If so, just update
           } else {
-              $(dropdown).chosen({
-                  search_contains: true,
-                  width: "100%"
-              }).addClass("chosenSelect"); //Add a class to check if it has been initalized
+            $(dropdown)
+              .chosen({
+                search_contains: true,
+                width: "100%",
+              })
+              .addClass("chosenSelect"); //Add a class to check if it has been initalized
           }
         }
 
@@ -324,138 +340,149 @@
       }
     </script>
 
-    <script>  //To add or remove rows from tables 
-      async function addRow (source) {
+    <script>
+      //To add or remove rows from tables
+      async function addRow(source) {
         //Remove the search box from elements
         removeSearchBox();
-        
+
         const rowToCopy = source.parentElement.parentElement;
-        const tableData = rowToCopy.parentElement     //Fetch the table body
-        
-        const copy = rowToCopy.cloneNode(true);     //Create a copy of the row
+        const tableData = rowToCopy.parentElement; //Fetch the table body
+
+        const copy = rowToCopy.cloneNode(true); //Create a copy of the row
 
         // Clear written text that the copy got from source row
         for (const child of copy.children) {
           //Get the type of element in row
           const tag = child.children[0].tagName;
 
-          if (tag === 'INPUT') {
+          if (tag === "INPUT") {
             //Set the value to blank if it is an input box
-            child.children[0].value = '';
-          } else if (tag === 'SELECT') {
+            child.children[0].value = "";
+          } else if (tag === "SELECT") {
             //deselect all options if it is a selection box
             child.children[0].selectedIndex = -1;
           }
         }
-        
+
         //Insert the row after the clicked row
         tableData.insertBefore(copy, rowToCopy.nextSibling);
-        
+
         //Change the serial numbers of the button for future usage
         const rows = tableData.children;
-        for (let i=0;i<rows.length;i++) {
-            rows[i].setAttribute("row",i);
+        for (let i = 0; i < rows.length; i++) {
+          rows[i].setAttribute("row", i);
         }
-        
+
         addSearchBox();
 
         //Reset the sequence in any column named Sequence
-        const sequences = tableData.querySelectorAll('[name*="Sequence"]')
+        const sequences = tableData.querySelectorAll('[name*="Sequence"]');
         let previousSequence = 0;
         for (const sequence of sequences) {
-            sequence.value = previousSequence+1;
-            previousSequence = parseInt(sequence.value);
+          sequence.value = previousSequence + 1;
+          previousSequence = parseInt(sequence.value);
         }
       }
 
-      async function removeRow (source) {
-        const tableData = source.parentElement.parentElement.parentElement;     //Fetch the table body   
-        
+      async function removeRow(source) {
+        const tableData = source.parentElement.parentElement.parentElement; //Fetch the table body
+
         //Don't delete the row if it is the only one
         if (tableData.children.length < 3) {
-            alert("This is the last row. You cannot delete it!");
-            return ;
+          alert("This is the last row. You cannot delete it!");
+          return;
         }
 
-        const rowToRemove = source.parentElement.parentElement;    //Fetch the row out of the table
-        const rowNum = parseInt(rowToRemove.getAttribute('row'));
+        const rowToRemove = source.parentElement.parentElement; //Fetch the row out of the table
+        const rowNum = parseInt(rowToRemove.getAttribute("row"));
 
-        let dataFlag = false;               //Flag to check if there is data in the row
+        let dataFlag = false; //Flag to check if there is data in the row
 
-        const inputs = rowToRemove.querySelectorAll ("input");      //All the columns with inputs
-        const selects = rowToRemove.querySelectorAll ("select");    //All the columns with selection options
-        const combined = [...inputs, ...selects];                 //Combined inputs and selects
+        const inputs = rowToRemove.querySelectorAll("input"); //All the columns with inputs
+        const selects = rowToRemove.querySelectorAll("select"); //All the columns with selection options
+        const combined = [...inputs, ...selects]; //Combined inputs and selects
 
         for (const element of combined) {
-            const deletable = element.parentElement.getAttribute("deletable") === "true";
-            if (element.value && !deletable) {  
-                dataFlag = true;                            //Set flag true if there is data in an element
-                break;    
-            }
-        }
-        
-        if (dataFlag) {                 //Give warining if the dataflag is true.
-            const removeFlag = confirm("There is data here. Are you sure you want to remove it?");
-            if (!removeFlag) {          //User doesn't select OK.
-                return ;
-            }
+          const deletable =
+            element.parentElement.getAttribute("deletable") === "true";
+          if (element.value && !deletable) {
+            dataFlag = true; //Set flag true if there is data in an element
+            break;
+          }
         }
 
-        rowToRemove.remove();           //Remove the row
+        if (dataFlag) {
+          //Give warining if the dataflag is true.
+          const removeFlag = confirm(
+            "There is data here. Are you sure you want to remove it?"
+          );
+          if (!removeFlag) {
+            //User doesn't select OK.
+            return;
+          }
+        }
+
+        rowToRemove.remove(); //Remove the row
 
         //Reset the serial in the buttons below the deleted row
         let rows = tableData.children;
-        for (let i=rowNum;i<rows.length;i++) {
-            rows[i].setAttribute("row",i);
+        for (let i = rowNum; i < rows.length; i++) {
+          rows[i].setAttribute("row", i);
         }
 
         //Reset the sequence in any column named Sequence
-        const sequences = tableData.querySelectorAll('[name*="Sequence"]')
+        const sequences = tableData.querySelectorAll('[name*="Sequence"]');
         let previousSequence = 0;
         for (const sequence of sequences) {
-            sequence.value = previousSequence+1;
-            previousSequence = parseInt(sequence.value);
+          sequence.value = previousSequence + 1;
+          previousSequence = parseInt(sequence.value);
         }
       }
     </script>
 
-    <script>  //To add or remove search box
+    <script>
+      //To add or remove search box
       function removeSearchBox() {
         //The keyword that is common in all search boxes
         const keyword = "chosen";
         //Get elements that contain the key word.
-        const searchBoxNodes = document.querySelectorAll(`[${keyword}*='true']`);
+        const searchBoxNodes = document.querySelectorAll(
+          `[${keyword}*='true']`
+        );
 
-        //Remove the search box from 
+        //Remove the search box from
         for (const node of searchBoxNodes) {
-            //Get the id of the seletion element
-            const selectId = node.children[0].id;
-            
-            //Get the id of the selection box associated with selection element. It'll always be selectid_keyword
-            const boxId = selectId+"_"+keyword;
-    
-            //Remove the selection box and destroy the script associated with it.
-            document.getElementById(boxId).remove();
-            $("#"+selectId).chosen("destroy"); 
+          //Get the id of the seletion element
+          const selectId = node.children[0].id;
+
+          //Get the id of the selection box associated with selection element. It'll always be selectid_keyword
+          const boxId = selectId + "_" + keyword;
+
+          //Remove the selection box and destroy the script associated with it.
+          document.getElementById(boxId).remove();
+          $("#" + selectId).chosen("destroy");
         }
       }
-      
+
       async function addSearchBox() {
         //The keyword that is common in all search boxes
         const keyword = "chosen";
         //Get elements that contain the key word.
-        const searchBoxNodes = document.querySelectorAll(`[${keyword}*='true']`);
+        const searchBoxNodes = document.querySelectorAll(
+          `[${keyword}*='true']`
+        );
 
         //Add search box to all nodes
         for (const node of searchBoxNodes) {
           //Get the row number of the element
-          const row = node.parentElement.getAttribute("row")
+          const row = node.parentElement.getAttribute("row");
           //Get the drop down inside the element
           const dropdown = node.children[0];
-          
+
           //Get the id of the drop down. To make it unique, we preset it in the format column_row.
           let id = dropdown.getAttribute("id");
-          
+
           //Get the position of the last _ in the id.
           const trimAfter = id.lastIndexOf("_");
 
@@ -463,29 +490,30 @@
           if (trimAfter > 2) {
             id = id.substring(0, trimAfter);
           }
-          
+
           //Set the id to new row number and set it on the dropdown
-          id = id+'_'+row;
-          dropdown.setAttribute('id', id);
+          id = id + "_" + row;
+          dropdown.setAttribute("id", id);
 
           //Apply the search box on the element, with the new ID.
-          $("#"+id).chosen({
+          $("#" + id).chosen({
             search_contains: true,
-            width: `93%`
+            width: `93%`,
           });
         }
       }
     </script>
 
-    <script> //To handle warning for unsaved data
+    <script>
+      //To handle warning for unsaved data
       let unsavedDataFlag = false;
 
       //Show warning to user if there is unsaved data.
-      window.addEventListener('beforeunload', (event) => {
+      window.addEventListener("beforeunload", (event) => {
         if (unsavedDataFlag) {
           event.preventDefault(); // For some older browsers
-          event.returnValue = ''; // For chrome or firefox
-          return ''; // for Safari
+          event.returnValue = ""; // For chrome or firefox
+          return ""; // for Safari
         }
       });
     </script>

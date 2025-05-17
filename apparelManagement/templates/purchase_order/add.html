@@ -2,173 +2,128 @@
 
 {% block title %}
     Purchase Order Addition
-{% endblock %} 
+{% endblock %}
 
 {% block content %}
-    {% csrf_token %}          <!--This is to protect against CSRF attacks-->
+    {% csrf_token %}
 
-    <!-- The main Order form-->
-    <p>
-        <form method="POST" id="orderForm" autocomplete="off">
-            <div class="row g-3 bg-info {{theme.justify}} {{theme.align}} {{theme.border}}">
-                <div class="col col-md-4 d-flex {{theme.align}} {{theme.justify}}">
-                    <label>Supplier:&nbsp; </label>
-                    <select id="id_Supplier" class="{{theme.dropdown}}" name="Supplier"> </select>
-                    <input type="text" id="allocInvCode" name="allocationInvCode" value="" class="" hidden>
+    <!-- Main Order Form -->
+    <form method="POST" id="orderForm" autocomplete="off" class="mb-6">
+        <div class="card bg-base-100 shadow-lg p-6 space-y-4">
+            <div class="grid md:grid-cols-3 gap-4">
+                <div>
+                    <label class="label">Supplier</label>
+                    <select id="id_Supplier" name="Supplier" class="{{theme.dropdown}} w-full"></select>
+                    <input type="text" id="allocInvCode" name="allocationInvCode" value="" hidden>
                 </div>
-                <div class="col col-md-3 d-flex {{theme.align}} {{theme.justify}}">
-                    <label>Delivery Date:&nbsp; </label>
-                    {{order.DeliveryDate}}
+                <div>
+                    <label class="label">Delivery Date</label>
+                    <div class="input input-bordered w-full flex items-center">
+                        {{order.DeliveryDate}}
+                    </div>
                 </div>
-                <div class="col col-md-3 d-flex {{theme.align}} {{theme.justify}}">
-                    <label>Tax:&nbsp; </label>
-                    {{order.Tax}}
-                    <input type="text" id="allocInvCode" name="allocationInvCode" value="" class="" hidden>
-                </div>
-                <div class="col col-md-1 {{theme.align}} {{theme.textJustify}}">
-                    <button id="submit" class="{{theme.buttonSecondary}}" onclick="submitForms()" type="button">          <!--Save Button-->
-                        Save
-                    </button>
+                <div>
+                    <label class="label">Tax</label>
+                    <div class="input input-bordered w-full flex items-center">
+                        {{order.Tax}}
+                    </div>
                 </div>
             </div>
-        </form>
-    </p>
-    <!--Inventory Table-->
+            <div class="flex justify-end">
+                <button id="submit" class="{{theme.buttonSecondary}}" onclick="submitForms()" type="button">
+                    Save
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- 📦 Inventory Table -->
     <div id="inventoryTable" name="invTable">
         <form method="POST" id="inventoryForm" autocomplete="off">
-            <div class="row mt-3 {{theme.justify}} {{theme.textJustify}} bg-dark text-white" row="0">    
-                <div class="col col-md-4">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Inventory Code
+            <div class="card bg-base-100 shadow-md p-6 space-y-3">
+                <!-- Header Row -->
+                <div class="grid grid-cols-12 gap-3 font-semibold text-sm text-neutral-content bg-neutral p-2 rounded">
+                    <div class="col-span-4">Inventory Code</div>
+                    <div class="col-span-1">Variant</div>
+                    <div class="col-span-2">Quantity</div>
+                    <div class="col-span-1">Price</div>
+                    <div class="col-span-2">Currency</div>
+                    <div class="col-span-1">Forex</div>
+                    <div class="col-span-1">Actions</div>
+                </div>
+
+                <!-- First Row -->
+                <div class="grid grid-cols-12 gap-3 items-center">
+                    <div class="col-span-4 flex items-center gap-2">
+                        <select class="{{theme.dropdown}} w-full" id="id_InventoryCode_1" name="InvCode"></select>
+                        <span class="material-symbols-outlined cursor-pointer" onclick="openInvSearch(this)">search</span>
                     </div>
-                </div>
-                <div class="col col-md-1">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Variant
+                    <div class="col-span-1">{{inventory.Variant}}</div>
+                    <div class="col-span-2">{{inventory.Quantity}}</div>
+                    <div class="col-span-1">{{inventory.Price}}</div>
+                    <div class="col-span-2">
+                        <select class="{{theme.dropdown}} w-full" id="id_Currency_1" name="Currency"></select>
                     </div>
-                </div>
-                <div class="col col-md-2">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Quantity
+                    <div class="col-span-1">{{inventory.Forex}}</div>
+                    <div class="col-span-1 flex items-center gap-1">
+                        <button class="{{theme.plusButton}}" type="button" onclick="openAllocation(this)">
+                            <span class="material-symbols-outlined">more_vert</span>
+                        </button>
+                        <button class="{{theme.plusButton}}" type="button" onclick="addRow(this)">+</button>
+                        <button class="{{theme.minusButton}}" type="button" onclick="removeRow(this)">-</button>
                     </div>
-                </div>
-                <div class="col col-md-1">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Price
-                    </div>
-                </div>
-                <div class="col col-md-2">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Currency
-                    </div>
-                </div>
-                <div class="col col-md-1">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Forex
-                    </div>
-                </div>
-                <div class="col col-md-1">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Actions
-                    </div>
-                </div>
-            </div>
-            <div class="row mt-1 {{theme.justify}} {{theme.textJustify}}" row="1">
-                <div class="col col-md-4" chosen="true">
-                    <select class="{{theme.dropdown}}" id="id_InventoryCode_1" name="InvCode"></select>
-                    <span class="material-symbols-outlined" onclick="openInvSearch(this)">search</span>
-                </div>
-                <div class="col col-md-1">
-                    {{inventory.Variant}}
-                </div>
-                <div class="col col-md-2">
-                    {{inventory.Quantity}}
-                </div>
-                <div class="col col-md-1">
-                    {{inventory.Price}}
-                </div>
-                <div class="col col-md-2">
-                    <select class="{{theme.dropdown}}" id="id_Currency_1" name="Currency"></select>
-                </div>
-                <div class="col col-md-1">
-                    {{inventory.Forex}}
-                </div>
-                <div class="col col-md-1">
-                    <button class="{{theme.plusButton}}" type="button" onclick="openAllocation(this)">
-                        <span class="material-symbols-outlined">more_vert</span>
-                    </button>
-                    <button class="{{theme.plusButton}}" type="button" onclick="addRow(this)">
-                        <span>+</span>
-                    </button>
-                    <button class="{{theme.minusButton}}" type="button" onclick="removeRow(this)">
-                        <span>-</span>
-                    </button>
                 </div>
             </div>
         </form>
     </div>
 
-    <!--Allocation dialog box-->
+    <!-- 🧮 Allocation Dialog -->
     <form method="POST" id="allocationForm" autocomplete="off">
         <div class="modal fade" id="allocationTable" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
             <div class="{{theme.dialogBox}}">
-                <div class="modal-content">
-                    <div class="{{theme.dialogBoxHeader}}">
+                <div class="modal-content p-6 bg-base-100 rounded-lg shadow-lg">
+                    <div class="{{theme.dialogBoxHeader}} mb-4">
                         <div class="{{theme.dialogBoxTitle}}" id="modalLabel">
                             Allocation
                         </div>
                     </div>
-                    <div class="{{theme.dialogBoxBody}}">
-                        <div class="row mt-3 {{theme.justify}} {{theme.textJustify}} bg-dark text-white" row="0">
-                            <div class="col col-md-5">
-                                <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                                    Order#
-                                </div>
-                            </div>
-                            <div class="col col-md-4">
-                                <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                                    Quantity
-                                </div>
-                            </div>
-                            <div class="col col-md-2">
-                                <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                                    Actions
-                                </div>
-                            </div>
+
+                    <div class="{{theme.dialogBoxBody}} space-y-3">
+                        <div class="grid grid-cols-12 gap-4 font-semibold text-sm bg-neutral text-white p-2 rounded">
+                            <div class="col-span-6">Order#</div>
+                            <div class="col-span-4">Quantity</div>
+                            <div class="col-span-2">Actions</div>
                         </div>
-                        <div class="row mt-1 {{theme.justify}} {{theme.textJustify}}" row="1">
-                            <div class="col col-md-5" chosen="true">
-                                <select class="{{theme.dropdown}}" id="id_WorkOrder_1" name="WorkOrder" onchange="getDefaultQty(this)"></select>
+
+                        <div class="grid grid-cols-12 gap-4 items-center">
+                            <div class="col-span-6">
+                                <select class="{{theme.dropdown}} w-full" id="id_WorkOrder_1" name="WorkOrder" onchange="getDefaultQty(this)"></select>
                             </div>
-                            <div class="col col-md-4">
-                                <input type="number" class="{{theme.textInput}}" value="" name="Quantity" min="0" onchange="changeQty()">
+                            <div class="col-span-4">
+                                <input type="number" class="{{theme.textInput}} w-full" name="Quantity" min="0" onchange="changeQty()">
                             </div>
-                            <div class="col col-md-2">
-                                <button class="{{theme.plusButton}}" type="button" onclick="addRow(this)">
-                                    <span>+</span>
-                                </button>
-                                <button class="{{theme.minusButton}}" type="button" onclick="removeRow(this)">
-                                    <span>-</span>
-                                </button>
+                            <div class="col-span-2 flex gap-1">
+                                <button class="{{theme.plusButton}}" type="button" onclick="addRow(this)">+</button>
+                                <button class="{{theme.minusButton}}" type="button" onclick="removeRow(this)">-</button>
                             </div>
                         </div>
                     </div>
-                    <div class="{{theme.dialogBoxFooter}}">
-                        <label>Total Qty:&nbsp; </label>
+
+                    <div class="{{theme.dialogBoxFooter}} mt-6 flex flex-wrap items-center gap-4">
+                        <label>Total Qty:</label>
                         <div id="totalQuantity"></div>
-
-                        <label>|| Allocted Qty:&nbsp; </label>
+                        <label>|| Allocated Qty:</label>
                         <div id="allocatedQuantity"></div>
-
-                        <label>|| Free Qty:&nbsp; </label>
+                        <label>|| Free Qty:</label>
                         <div id="freeQuantity"></div>
-                        
                         <button type="button" class="{{theme.buttonSecondary}}" data-bs-dismiss="modal" onclick="closeAllocation()">OK</button>
                     </div>
                 </div>
             </div>
         </div>
     </form>
+
+
 
     <script> //To run after page loads.
         window.addEventListener('load', async () => {

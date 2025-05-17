@@ -2,141 +2,108 @@
 
 {% block title %}
     Requisition Form
-{% endblock %} 
+{% endblock %}
 
 {% block content %}
-    {% csrf_token %}          <!--This is to protect against CSRF attacks-->
-    <!-- Selection Form -->
-    <p>
-        <form method="GET" id="ordersForm" autocomplete="off">
-            <div class="row g-3 bg-info {{theme.justify}} {{theme.align}} {{theme.border}}">
-                <div class="col-4 {{theme.align}} {{theme.justify}}">
-                    <label>Work Order*:&nbsp; </label>
-                    <select id="id_Order" class="{{theme.dropdown}}" name="order"></select>
+    {% csrf_token %}
+
+    <!-- 📝 Selection Form -->
+    <form method="GET" id="ordersForm" autocomplete="off">
+        <div class="p-6 {{ theme.card }} space-y-4">
+            <div class="grid md:grid-cols-3 gap-4">
+                <div>
+                    <label class="label">Work Order*</label>
+                    <select id="id_Order" class="{{ theme.dropdown }} w-full" name="order"></select>
                 </div>
-                <div class="col-4 {{theme.align}} {{theme.justify}}">
-                    <label>Department*:&nbsp; </label>
-                    <select id="id_Department" class="{{theme.dropdown}}" name="Department"></select>
+                <div>
+                    <label class="label">Department*</label>
+                    <select id="id_Department" class="{{ theme.dropdown }} w-full" name="Department"></select>
                 </div>
-                <div class="col btn-group {{theme.align}} {{theme.textJustify}}">
-                    <button type="submit" class="{{theme.buttonSecondary}}">          <!--Save Button-->
+                <div class="flex items-end gap-2">
+                    <button type="submit" class="{{ theme.buttonSecondary }}">
                         Refresh
                     </button>
-                    <button id="submit" class="{{theme.buttonSecondary}}" onclick="addRequest()" type="button">          <!--Save Button-->
+                    <button id="submit" class="{{ theme.buttonSecondary }}" onclick="addRequest()" type="button">
                         Add
                     </button>
                 </div>
             </div>
-            <div class="row g-1 {{theme.justify}} {{theme.align}} {{theme.border}}">
-                <div class="col">
-                    <select id="id_Inventories" class="{{theme.dropdown}}" name="inventories" multiple 
-                    onchange="changeDropdown(this)" data-placeholder="Select Multiple Inventories"></select>
-                </div>
-                <div class="col {{theme.align}} {{theme.justify}}">
-                    <div class="input-group">
-                        <input id="id_Search" type="text" class="{{theme.textInput}}" placeholder="Apply Search"
-                        value="{{search}}" name="search" onkeyup="changeSearch(this)">
-                        <button type="button" class="{{theme.minusButton}}" onclick="clearInput(this)">
-                            <span>X</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </form>
-    </p>
 
-    <!-- Inventory Selection Table -->
-    <div id="inventoryTable" name="invTable">
-        <form method="POST" id="inventoryForm" autocomplete="off">
-            <div class="row mt-3 {{theme.justify}} {{theme.textJustify}} bg-dark text-white" row="0">
-                <div class="col-1">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        <input class="form-check-input" type="checkbox" value="" onclick="selectAll(this)">
-                    </div>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <select id="id_Inventories" class="{{ theme.dropdown }} w-full" name="inventories" multiple onchange="changeDropdown(this)" data-placeholder="Select Multiple Inventories"></select>
                 </div>
-                <div class="col-3">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Name
-                    </div>
-                </div>
-                <div class="col-1">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Variant
-                    </div>
-                </div>
-                <div class="col-1">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Cons.
-                    </div>
-                </div>
-                <div class="col-1">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Required
-                    </div>
-                </div>
-                <div class="col-1">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Ordered
-                    </div>
-                </div>
-                <div class="col-1">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Received
-                    </div>
-                </div>
-                <div class="col-1">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Requested
-                    </div>
-                </div>
-                <div class="col-1">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Issued
-                    </div>
-                </div>
-                <div class="col-1">
-                    <div class="{{theme.secondaryHeading}} {{theme.textJustify}}">
-                        Balance
-                    </div>
+                <div class="flex items-center gap-2">
+                    <input id="id_Search" type="text" class="{{ theme.textInput }} w-full" placeholder="Apply Search" value="{{ search }}" name="search" onkeyup="changeSearch(this)">
+                    <button type="button" class="{{ theme.buttonSecondary }}" onclick="clearInput(this)">
+                        <span>X</span>
+                    </button>
                 </div>
             </div>
+        </div>
+    </form>
+
+    <!-- 📦 Inventory Selection Table -->
+    <div id="inventoryTable" name="invTable" class="mt-6">
+        <form method="POST" id="inventoryForm" autocomplete="off">
+            <!-- Table Header -->
+            <div class="grid grid-cols-12 gap-3 font-semibold text-sm text-neutral-content bg-neutral p-2 rounded">
+                <div class="col-span-1 flex items-center justify-center">
+                    <input class="form-check-input" type="checkbox" value="" onclick="selectAll(this)">
+                </div>
+                <div class="col-span-3">Name</div>
+                <div class="col-span-1">Variant</div>
+                <div class="col-span-1">Cons.</div>
+                <div class="col-span-1">Required</div>
+                <div class="col-span-1">Ordered</div>
+                <div class="col-span-1">Received</div>
+                <div class="col-span-1">Requested</div>
+                <div class="col-span-1">Issued</div>
+                <div class="col-span-1">Balance</div>
+            </div>
+
+            <!-- Table Rows -->
             {% for data in entries %}
-                <div class="row mt-1 {{theme.justify}} {{theme.textJustify}}" row="{{forloop.counter}}">
-                    <div class="col-1">
+                <div class="grid grid-cols-12 gap-3 items-center mt-2 {{ theme.textJustify }}">
+                    <div class="col-span-1 flex items-center justify-center">
                         <input class="form-check-input" type="checkbox">
                     </div>
-                    <div class="col-3">
-                        <input type="text" class="{{theme.textInput}}" value="{{data.InventoryCode}}" name="InventoryCode" hidden>
-                        <input type="text" class="{{theme.textInput}}" value="{{data.Name}}" name="Name" readonly>
+                    <div class="col-span-3">
+                        <input type="text" class="{{ theme.textInput }}" value="{{ data.InventoryCode }}" name="InventoryCode" hidden>
+                        <input type="text" class="{{ theme.textInput }}" value="{{ data.Name }}" name="Name" readonly>
                     </div>
-                    <div class="col-1">
-                        <input type="text" class="{{theme.textInput}}" value="{{data.Variant}}" name="Variant" readonly>
+                    <div class="col-span-1">
+                        <input type="text" class="{{ theme.textInput }}" value="{{ data.Variant }}" name="Variant" readonly>
                     </div>
-                    <div class="col-1">
-                        <input type="number" class="{{theme.textInput}}" value="{{data.Consumption}}" name="Consumption" readonly>
+                    <div class="col-span-1">
+                        <input type="number" class="{{ theme.textInput }}" value="{{ data.Consumption }}" name="Consumption" readonly>
                     </div>
-                    <div class="col-1">
-                        <input type="number" class="{{theme.textInput}}" value="{{data.Required}}" name="Required" readonly>
+                    <div class="col-span-1">
+                        <input type="number" class="{{ theme.textInput }}" value="{{ data.Required }}" name="Required" readonly>
                     </div>
-                    <div class="col-1">
-                        <input type="number" class="{{theme.textInput}}" value="{{data.Ordered}}" name="Ordered" readonly>
+                    <div class="col-span-1">
+                        <input type="number" class="{{ theme.textInput }}" value="{{ data.Ordered }}" name="Ordered" readonly>
                     </div>
-                    <div class="col-1">
-                        <input type="number" class="{{theme.textInput}}" value="{{data.Received}}" name="Received" readonly>
+                    <div class="col-span-1">
+                        <input type="number" class="{{ theme.textInput }}" value="{{ data.Received }}" name="Received" readonly>
                     </div>
-                    <div class="col-1">
-                        <input type="number" class="{{theme.textInput}}" value="{{data.Requested}}" name="Requested" readonly>
+                    <div class="col-span-1">
+                        <input type="number" class="{{ theme.textInput }}" value="{{ data.Requested }}" name="Requested" readonly>
                     </div>
-                    <div class="col-1">
-                        <input type="number" class="{{theme.textInput}}" value="{{data.Issued}}" name="Issued" readonly>
+                    <div class="col-span-1">
+                        <input type="number" class="{{ theme.textInput }}" value="{{ data.Issued }}" name="Issued" readonly>
                     </div>
-                    <div class="col-1">
-                        <input type="number" max="{{data.Balance}}" class="{{theme.textInput}}" value="{{data.Balance}}" name="Balance" onchange="checkQty(this)">
+                    <div class="col-span-1">
+                        <input type="number" max="{{ data.Balance }}" class="{{ theme.textInput }}" value="{{ data.Balance }}" name="Balance" onchange="checkQty(this)">
                     </div>
                 </div>
             {% endfor %}
         </form>
     </div>
+
+
+
+
 
     <script> //To run when the page loads
         window.addEventListener('load', async () => {

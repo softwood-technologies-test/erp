@@ -1,101 +1,98 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    Purchase Orders
+  Purchase Orders
 {% endblock %}
 
 {% block content %}
-    <div class="{{theme.border}}">
-        <p>
-            <div class="row g-3 {{theme.justify}} {{theme.align}}">
-                <div class="col {{theme.textJustify}}">
-                    <form action="{% url 'POs' %}" method="get">
-                        <select id="supplierFilter" name="supplierFilter" onchange="this.form.submit()" class="{{theme.dropdown}}">
-                            <option value="">  ---------  </option>
-                        </select>
-                        <input type="hidden" name="searchTerm" value="{{ searchTerm }}">
-                        <input type="hidden" name="poNumber" value="{{ selectedPO }}">
-                    </form>
-                </div>
-                <div class="col btn-group {{theme.textJustify}}">
-                    <a class="{{theme.buttonBasic}}" href="/purchaseorder/add" role="button" target="_blank">Add Order</a>
-                    <a id="copyOrderButton" class="{{theme.buttonBasic}}" role="button">Copy Order</a>
-                    <a id="editOrderButton" class="{{theme.buttonBasic}}" role="button" target="_blank">Edit Order</a>
-                    <a id="deleteOrderButton" class="{{theme.buttonBasic}}" role="button">Delete Order</a>
-                </div>
-            </div>
-        </p>
-        <p>
-            <div class="row g-0 {{theme.justify}} {{theme.align}}">
-                <div class="col col-md-2 {{theme.textJustify}}">
-                    <form action="{% url 'POs' %}" method="get">
-                        <input type="number" class="{{theme.textInput}} w-100" name="poFilter" placeholder="PO Number" value="{{selectedPO}}">
-                </div>
-                <div class="col col-md-8 {{theme.textJustify}}">
-                    <input type="text" class="{{theme.textInput}} w-100" name="searchTerm" placeholder="Search Orders" value="{{searchTerm}}">
-                </div>
-                <div class="col col-md-2 {{theme.textJustify}}">
-                    <button type="submit" class="{{theme.buttonBasic}}">Search</button>
-                </div>
-                    <input type="hidden" name="supplierFilter" value="{{ selectedSupplier }}">
-                    </form>
-            </div>
-        </p>
+<div class="{{theme.border}} p-6 rounded-xl shadow-md bg-inherit space-y-6">
+
+  <!-- FILTERS & ACTION BUTTONS -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+    <!-- Supplier Filter -->
+    <form action="{% url 'POs' %}" method="get" class="w-full md:w-auto">
+      <label class="block text-white font-semibold mb-1">Filter by Supplier</label>
+      <select id="supplierFilter" name="supplierFilter" onchange="this.form.submit()" class="{{theme.dropdown}} w-full text-white bg-gray-800 border-gray-600">
+        <option value="">---------</option>
+      </select>
+      <input type="hidden" name="searchTerm" value="{{ searchTerm }}">
+      <input type="hidden" name="poNumber" value="{{ selectedPO }}">
+    </form>
+
+    <!-- Action Buttons -->
+    <div class="flex flex-wrap gap-3">
+      <a href="/purchaseorder/add" class="{{theme.buttonSecondary}} " target="_blank">Add Order</a>
+      <a id="copyOrderButton" class="{{theme.buttonSecondary}} " target="_blank">Copy Order</a>
+      <a id="editOrderButton" class="{{theme.buttonSecondary}} " target="_blank">Edit Order</a>
+      <a id="deleteOrderButton" class="{{theme.buttonSecondary}}" target="_blank">Delete Order</a>
     </div>
+  </div>
 
-    <div id ="purchaseOrderTable">
-        <table class="{{theme.table}}">
-            <tr class = "{{theme.tableHead}}">
-                <th scope="col">Select</th>
-                <th scope="col">Purchase Order</th>
-                <th scope="col">Delivery Date</th>
-                <th scope="col">Supplier</th>
-                <th scope="col">Inventory (Top 3)</th>
-                <th scope="col">Work Order (Top 3)</th>
-            </tr>
-            <tbody id="tableData" class = "{{theme.tableBody}}">
-                {% for data in order %}
-                    <tr>
-                        <td><input type="radio" name="item_checkbox"></td>
-                        <td class="order">{{ data.PONumber }}</td>
-                        <td>{{ data.DeliveryDate }}</td>
-                        <td>{{ data.Supplier }}</td>
-                        <td>{{ data.Name }}</td>
-                        <td>{{ data.WorkOrder }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+  <!-- SEARCH BAR -->
+  <form action="{% url 'POs' %}" method="get" class="flex flex-col md:flex-row gap-3 md:items-center">
+    <div class="md:w-2/12">
+      <input type="number" name="poFilter" placeholder="PO Number" value="{{selectedPO}}"
+        class="{{theme.textInput}} w-full text-white bg-gray-800 border border-gray-600 rounded-md p-2" />
     </div>
+    <div class="flex-1">
+      <input type="text" name="searchTerm" placeholder="Search Orders" value="{{searchTerm}}"
+        class="{{theme.textInput}} w-full text-white bg-gray-800 border border-gray-600 rounded-md p-2" />
+      <input type="hidden" name="supplierFilter" value="{{ selectedSupplier }}">
+    </div>
+    <div class="md:w-32">
+      <button type="submit" class="{{theme.buttonSecondary}} ">Search</button>
+    </div>
+  </form>
 
-    <script>//To change the buttons based on selection in radio
-        $("#tableData").on("click", "input[type='radio']", function() {
-            //Get the code against seletion
-            const selectedCode = $(this).closest("tr").find("td.order").text();
-            
-            //Find and link the edit card button to the selected code
-            var button = $("#copyOrderButton");           
-            button.attr("href", "/purchaseorder/" + selectedCode + "/copy");
-            
-            button = $("#editOrderButton");           
-            button.attr("href", "/purchaseorder/" + selectedCode + "/edit");
-  
-            button = $("#deleteOrderButton");
-            button.attr("href", "/purchaseorder/" + selectedCode + "/delete");
-        });
-    </script>
+  <!-- TABLE -->
+  <div id="purchaseOrderTable" class="overflow-x-auto mt-4">
+    <table class="{{theme.table}} w-full table-fixed border border-gray-600 text-left text-sm md:text-base text-white">
+      <thead class="{{theme.tableHead}} bg-gray-900 text-white font-semibold">
+        <tr>
+          <th class="p-2 w-1/12">Select</th>
+          <th class="p-2 w-2/12">Purchase Order</th>
+          <th class="p-2 w-2/12">Delivery Date</th>
+          <th class="p-2 w-2/12">Supplier</th>
+          <th class="p-2 w-3/12">Inventory (Top 3)</th>
+          <th class="p-2 w-2/12">Work Order (Top 3)</th>
+        </tr>
+      </thead>
+      <tbody id="tableData" class="{{theme.tableBody}} bg-gray-800 text-white">
+        {% for data in order %}
+        <tr class="border-t border-gray-700 hover:bg-gray-700">
+          <td class="p-2"><input type="radio" name="item_checkbox" class="accent-indigo-500"></td>
+          <td class="p-2 order font-mono">{{ data.PONumber }}</td>
+          <td class="p-2">{{ data.DeliveryDate }}</td>
+          <td class="p-2">{{ data.Supplier }}</td>
+          <td class="p-2">{{ data.Name }}</td>
+          <td class="p-2">{{ data.WorkOrder }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 
-    <script>//To run when the page loads
-        window.addEventListener('load', async () => {
-            //Supplier dropdown
-            let response = await fetch('/options/suppliers');
-            const customers = await response.json();
-            await appendOptions('supplierFilter', customers, '{{selectedSupplier}}');
-            //Apply Search Box
-            $("#supplierFilter").chosen({
-                search_contains: true,
-                width: "100%"
-            });
-        });
-    </script>
+  <!-- SCRIPT -->
+  <script>
+    // Update buttons on row selection
+    $("#tableData").on("click", "input[type='radio']", function () {
+      const selectedCode = $(this).closest("tr").find("td.order").text().trim();
+      $("#copyOrderButton").attr("href", "/purchaseorder/" + selectedCode + "/copy");
+      $("#editOrderButton").attr("href", "/purchaseorder/" + selectedCode + "/edit");
+      $("#deleteOrderButton").attr("href", "/purchaseorder/" + selectedCode + "/delete");
+    });
+
+    // Populate supplier dropdown on load
+    window.addEventListener('load', async () => {
+      let response = await fetch('/options/suppliers');
+      const suppliers = await response.json();
+      await appendOptions('supplierFilter', suppliers, '{{selectedSupplier}}');
+      $("#supplierFilter").chosen({
+        search_contains: true,
+        width: "100%"
+      });
+    });
+  </script>
+</div>
 {% endblock %}
