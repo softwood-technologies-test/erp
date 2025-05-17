@@ -8,6 +8,7 @@ import json
 from .theme import theme
 from . import models
 from .services.generic_services import refineJson, applySearch, paginate
+from .services import customer_service
 
 @login_required(login_url='/login')
 def Home(request: HttpRequest):

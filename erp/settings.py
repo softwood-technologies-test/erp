@@ -96,11 +96,11 @@ WSGI_APPLICATION = 'erp.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "mssql",
-        "NAME": "ERP",
-        "USER": "sa",
-        "PASSWORD": "Softwood@FOS123",
-        "HOST": "localhost",
-        "PORT": "1433",
+        "NAME": os.environ.get("DATABASE_NAME",""),
+        "USER": os.environ.get("DATABASE_USER",""),
+        "PASSWORD": os.environ.get("DATABASE_PASSWORD",""),
+        "HOST": os.environ.get("DATABASE_HOST",""),
+        "PORT": os.environ.get("DATABASE_PORT",""),
         "OPTIONS": {
             "driver": "ODBC Driver 18 for SQL Server", 
             'extra_params': 'Encrypt=yes;TrustServerCertificate=yes',

@@ -28,3 +28,13 @@ class BundleAdmin(admin.ModelAdmin):
     list_display = ('Cut','Size')
     list_filter = ('Cut',)
     ordering = ('Cut',)
+
+class ImpExpResource (resources.ModelResource):
+    class Meta:
+        model = models.RFIDCard
+@admin.register(models.RFIDCard)
+class ImpExp(ImportExportModelAdmin):
+    list_display = ('GroupNumber','CardNumber','GroupStatus')
+    list_filter = ('GroupStatus',)
+    ordering = ('CardNumber',)
+    resource_class = ImpExpResource

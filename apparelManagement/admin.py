@@ -25,13 +25,6 @@ class CurrencyAdmin(admin.ModelAdmin):
     list_display = ('Code', 'Name') """
 
 
-@admin.register(models.StyleCard)
-class StyleAdmin(admin.ModelAdmin):
-    '''Admin View for Style'''
-
-    list_display = ('StyleCode','StyleName','Customer')
-    list_filter = ('Customer',)
-
 @admin.register(models.Supplier)
 class SupplierAdmin(admin.ModelAdmin):
     '''Admin View for Supplier'''
@@ -56,24 +49,8 @@ class DepartmentAdmin (admin.ModelAdmin):
     search_fields = ('Name', 'Location')
     ordering = ('Name',)
 
-@admin.register(models.Inventory)
-class InventoryAdmin(admin.ModelAdmin):
-    '''Admin View for Inventory'''
-    
-    list_display = ('Code','Name')
-    list_filter = ('Group',)
-    search_fields = ('Code','Name')
-
 @admin.register(models.Notification)
 class NotificationAdmin(admin.ModelAdmin):
     list_display = ('Heading','Summary')
     list_filter = ('User',)
     search_fields = ('Summary','Body')
-
-@admin.register(models.RecInventory)
-class InventoryReceiptAdmin(admin.ModelAdmin):
-    '''Admin View for InventoryReceipt'''
-
-    list_display = ('id','InventoryCode','Variant')
-    list_filter = ('ReceiptNumber',)
-    ordering = ('id',)

@@ -1,5 +1,7 @@
 import pandas as pd
 
+from django.db import transaction
+
 from .. import models
 from . import generic_services
 
@@ -38,3 +40,12 @@ def GetCoreSheetList(workOrder: models.WorkOrder):
     ).reset_index()
     
     return generic_services.dfToListOfDicts(dfBundles)
+
+@transaction.atomic
+def CompleteCardGroup(cardId: int):
+    try:
+        groupNumber = models.RFIDCard.objects.get(CardId=cardId).GroupNumber
+    except:
+        raise LookupError('Card not added in system')
+    
+    models.RFIDCard.objects.filter(GroupNumber=groupNumber).update(GroupStatus='Complete')

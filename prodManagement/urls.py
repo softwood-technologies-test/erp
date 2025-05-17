@@ -28,6 +28,7 @@ urlpatterns = [
     path('productivity/workers', views.Workers, name='workers'),
     path('productivity/worker/add', views.AddWorker, name='addWorker'),
     path('productivity/worker/<int:pk>/edit', views.EditWorker, name='editWorker'),
+    path('productivity/api/complete-group', views.MarkGroupCompletion.as_view(), name='groupCompletionAPI'),
 
     path('options/operations', options_service.GetOperations, name='operationsDropdown'),
     path('options/operations/sections', options_service.GetOperationSections, name='opSecs'),

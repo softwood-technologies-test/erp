@@ -12,9 +12,9 @@ class ImpExp(ImportExportModelAdmin):
     list_display = ('id','Name')
     resource_class = ImpExpResource"""
 
-@admin.register(models.Call)
+""" @admin.register(models.Call)
 class CallAdmin(admin.ModelAdmin):
     '''Admin View for Call'''
 
     list_display = ('Date', 'Caller', 'Customer')
-    list_filter = ('Caller',)
+    list_filter = ('Caller',) """

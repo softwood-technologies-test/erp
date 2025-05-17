@@ -112,3 +112,15 @@ class Worker(models.Model):
             models.Index(fields=['Department']),
             models.Index(fields=['Status']),
         ]
+
+class RFIDCard(models.Model):
+    CardId = models.PositiveBigIntegerField(primary_key=True)
+    CardNumber = models.PositiveBigIntegerField(unique=True)
+    GroupNumber = models.PositiveBigIntegerField()
+    GroupStatus = models.CharField(max_length=31, default='InComplete')
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['GroupNumber']),
+            models.Index(fields=['GroupStatus']),
+        ]

@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import  AllowAny
 from rest_framework.request import Request
+from rest_framework.authtoken.models import Token
 import rest_framework
 
 import json
@@ -430,3 +431,30 @@ def EditWorker(request:HttpRequest, pk: int):
             'theme': theme
         }
         return render(request, 'workers/edit.html', context)
+
+class MarkGroupCompletion(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request:Request):
+        credentials = request.data.get('credentials')
+
+        try:
+            token = Token.objects.get(key=credentials)
+        except:
+            response = {'error': 'Not authorised'}
+            status=  rest_framework.status.HTTP_401_UNAUTHORIZED
+            return Response(data=response, status=status)            
+
+        cardId = request.data.get('cardId')
+
+        try:
+            core_sheet_service.CompleteCardGroup(cardId)
+            
+            response = {'message': 'Saved Successfully'}
+            status = rest_framework.status.HTTP_200_OK
+
+            return Response (data=response, status=status)
+        except Exception as e:
+            response = {'error': str(e)}
+            status=  rest_framework.status.HTTP_400_BAD_REQUEST
+            return Response(data=response, status=status)
