@@ -10,7 +10,6 @@ from . import generic_services
 def GetOperations(sectionFilter: str, machineType: str, skillLevel: str, ratePerSAM: str):
     operations = models.Operation.objects
 
-    fields = ['id', 'Name', 'Section', 'Category', 'SkillLevel', 'SMV', 'MachineType', 'Rate']
     filters = Q()
     if sectionFilter:
         filters &= Q(Section=sectionFilter)
@@ -18,7 +17,8 @@ def GetOperations(sectionFilter: str, machineType: str, skillLevel: str, ratePer
         filters &= Q(MachineType=machineType)
     if skillLevel:
         filters&= Q(SkillLevel=skillLevel)
-
+    
+    fields = ['id', 'Name', 'Section', 'Category', 'SkillLevel', 'SMV', 'MachineType', 'Rate']
     if filters:
         operations = operations.filter(filters).values(*fields)
     else:
@@ -98,9 +98,9 @@ def GetMachines(
         filters &= Q(Department=department)
     
     if filters:
-        machines = models.Machines.objects.filter(filters).values(*fields)
+        machines = models.Machine.objects.filter(filters).values(*fields)
     else:
-        machines = models.Machines.objects.all().values(*fields)
+        machines = models.Machine.objects.all().values(*fields)
     
     if machines:
         dfMachines = pd.DataFrame(machines)
@@ -134,12 +134,12 @@ def AddMachine(data: Dict):
     except Exception as e:
         raise ValueError(e)
 
-def GetDataForMachine (machine: models.Machines):
+def GetDataForMachine (machine: models.Machine):
     data = model_to_dict(machine)
     
     return data
 
-def EditMachine (data: Dict, machine: models.Machines):
+def EditMachine (data: Dict, machine: models.Machine):
     data = {key: None if value == 'null' else value for key, value in data.items()}
     
     #Convert department from string to department object if it is provided

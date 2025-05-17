@@ -1,5 +1,6 @@
 theme = {
     'navigationBar': 'navbar bg-gray-900 text-white dark:bg-gray-800 dark:text-gray-200',
+    'navigationDropdown':'dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-50',
     'pageBody': 'container mx-auto p-4 dark:text-gray-200',
     
     #Text and Text Box Theme

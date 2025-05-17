@@ -19,7 +19,6 @@ def blank (request: HttpRequest):
 @login_required(login_url='/login')
 def home (request: HttpRequest):
     notifications = notifications_service.GetNotifications(request.user)
-    #print(notifications)
 
     context = {
         'data': json.dumps(list(notifications)),

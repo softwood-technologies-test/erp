@@ -25,8 +25,9 @@ urlpatterns = [
     path('productivity/core-sheet/<int:workOrder>/edit', views.EditCoreSheet, name='editCoreSheet'),
     path('producitivty/core-sheet/orders/missing', options_service.GetOrdersWithMissingCS, name='missingCS'),
 
-    path('producitivity/workers', views.Workers, name='workers'),
-    path('producitivity/worker/add', views.AddWorker, name='addWorker'),
+    path('productivity/workers', views.Workers, name='workers'),
+    path('productivity/worker/add', views.AddWorker, name='addWorker'),
+    path('productivity/worker/<int:pk>/edit', views.EditWorker, name='editWorker'),
 
     path('options/operations', options_service.GetOperations, name='operationsDropdown'),
     path('options/operations/sections', options_service.GetOperationSections, name='opSecs'),

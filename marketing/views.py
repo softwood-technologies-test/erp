@@ -6,7 +6,6 @@ from django.urls import reverse
 import json
 
 from .theme import theme
-from .services import customer_service, calling_service
 from . import models
 from .services.generic_services import refineJson, applySearch, paginate
 

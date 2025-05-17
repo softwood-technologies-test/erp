@@ -59,7 +59,7 @@
           <li><a href="{% url 'productivity' %}">Dashboard</a></li>
           <li class="dropdown dropdown-hover">
             <label tabindex="0" class="cursor-pointer">Presets</label>
-            <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+            <ul tabindex="0" class="{{theme.navigationDropdown}}">
               <li><a href="{% url 'styleBulletins' %}">Style Bulletin</a></li>
               <li><a href="{% url 'operations' %}">Operations</a></li>
               <li><a href="{% url 'machines' %}">Machines</a></li>
@@ -68,7 +68,7 @@
           </li>
           <li class="dropdown dropdown-hover">
             <label tabindex="0" class="cursor-pointer">Cutting</label>
-            <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+            <ul tabindex="0" class="{{theme.navigationDropdown}}">
               <li><a href="{% url 'coreSheets' %}">Core Sheet</a></li>
             </ul>
           </li>

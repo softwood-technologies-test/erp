@@ -22,7 +22,7 @@ class Operation(models.Model):
             models.Index(fields=['MachineType']),
         ]
 
-class Machines(models.Model):
+class Machine(models.Model):
     id = models.AutoField(primary_key=True)
     MachineId = models.CharField(max_length=31)
     PurchaseDate = models.DateField(auto_now_add=True)

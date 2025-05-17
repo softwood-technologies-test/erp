@@ -12,7 +12,9 @@ import rest_framework
 import json
 
 from .theme import theme
-from .services import stitching_service, generic_services, bulletin_service, core_sheet_service, worker_service
+from .services import stitching_service, generic_services, bulletin_service, core_sheet_service
+from .services import  worker_service
+
 from . import models
 
 @login_required(login_url='/login')
@@ -158,7 +160,7 @@ def AddMachine(request: HttpRequest):
 @login_required(login_url='/login')
 def EditMachine(request: HttpResponse, pk: int):
     try:
-        machine = models.Machines.objects.get(id=pk)
+        machine = models.Machine.objects.get(id=pk)
     except:
         return HttpResponse('Resource not found', status=404)
     
@@ -358,7 +360,21 @@ def Workers(request: HttpRequest):
     if request.method != 'GET':
         return HttpResponse('Not Allowed', status=401)
     
+    pageNumber = request.GET.get('page', 1)
+    search = request.GET.get('search', '')
+    department = request.GET.get('department', None)
+    status = request.GET.get('status',None)
+
+    if status == 'null':
+        status = None
+    
+    data = worker_service.GetWorkers(department, status)
+    data = generic_services.applySearch(data, search)
+    page = generic_services.paginate(data, pageNumber)
+
     context = {
+        'workers': page.object_list, 'page_obj': page,
+        'search': search, 'department': department, 'status': status,
         'theme': theme,
     }
     return render(request, 'workers/home.html', context)
@@ -371,7 +387,7 @@ def AddWorker(request: HttpRequest):
 
         try:
             workerCode = worker_service.AddWoker(data)
-            return redirect(reverse('editOperation', kwargs={'pk': workerCode}))
+            return redirect(reverse('editWorker', kwargs={'pk': workerCode}))
         except Exception as e:
             print(e)
             context = {
@@ -384,3 +400,33 @@ def AddWorker(request: HttpRequest):
             'theme': theme,
         }
         return render(request, 'workers/add.html', context)
+
+@login_required(login_url='/login')
+def EditWorker(request:HttpRequest, pk: int):
+    try:
+        worker = models.Worker.objects.get(WorkerCode=pk)
+    except:
+        return HttpResponse('Resource not found', status=404)
+
+    if request.method == 'POST':
+        fields = ['WorkerCode', 'WorkerName', 'DateOfBirth', 'FatherSpouseName', 'Department', 'SubDepartment', 'CNIC', 'Status', 'Gender', 'User', 'DateOfJoining']
+        data = {field: request.POST.get(field) for field in fields}
+
+        try:
+            worker_service.EditWorker(worker, data)
+            url = reverse('workers') + f'?search={worker.WorkerCode}'
+            return redirect(url)
+        except Exception as e:
+            print(e)
+            context = {
+                'error': e, 'data': data,
+                'theme': theme,
+            }
+            return render(request, 'workers/edit.html', context)
+    else:
+        data = worker_service.GetDataForWorker(worker)
+        context = {
+            'data': data,
+            'theme': theme
+        }
+        return render(request, 'workers/edit.html', context)
